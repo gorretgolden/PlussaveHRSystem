@@ -19,6 +19,7 @@ img{max-width:100%}
   --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
   --r:10px; --r-sm:7px;
+  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0c1411; --surface:#131d19; --surface-2:#18241f; --line:#24342d; --line-2:#30443b;
