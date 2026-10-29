@@ -1,0 +1,1449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PlusSave HR System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,750&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* base reset (added for local viewing) */
+*{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+
+/* Layout: fixed deep-green navigation rail + scrolling workspace; every menu opens with a brand strip carrying the PlusSave and PlusPay logos, then the page title and its actions. */
+:root{
+  --bg:#f2f5f3; --surface:#ffffff; --surface-2:#edf2ef; --line:#d9e3de; --line-2:#c6d3cc;
+  --ink:#12241c; --muted:#56675f; --faint:#86968e;
+  --brand:#0b5a3a; --brand-ink:#ffffff; --brand-soft:#e1efe8; --brand-strong:#06402a;
+  --accent:#b9821a; --accent-soft:#f8eed9;
+  --ok:#1c7447; --ok-soft:#e0f2e8; --warn:#9a5d00; --warn-soft:#fbeed8;
+  --crit:#b3261e; --crit-soft:#fce6e3; --info:#22579a; --info-soft:#e3ecf8;
+  --side-bg:#093523; --side-ink:#d7e8df; --side-muted:#8db2a0; --side-active:#11553a; --side-line:#14472f;
+  --bar:#1b7650; --bar-track:#e6eeea;
+  --shadow:0 1px 2px rgba(9,40,27,.06),0 6px 20px rgba(9,40,27,.07);
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:10px; --r-sm:7px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1411; --surface:#131d19; --surface-2:#18241f; --line:#24342d; --line-2:#30443b;
+  --ink:#e3ede8; --muted:#9bb0a6; --faint:#6d8378;
+  --brand:#3aa874; --brand-ink:#04140c; --brand-soft:#16301f; --brand-strong:#86d6ad;
+  --accent:#dfa944; --accent-soft:#33270f;
+  --ok:#4fc58c; --ok-soft:#12301f; --warn:#e9a640; --warn-soft:#33250e;
+  --crit:#f17c6d; --crit-soft:#3a1713; --info:#86b3f1; --info-soft:#15243a;
+  --side-bg:#07110d; --side-ink:#cfe1d7; --side-muted:#7c988b; --side-active:#153a29; --side-line:#122219;
+  --bar:#47b583; --bar-track:#1d2c25;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1411; --surface:#131d19; --surface-2:#18241f; --line:#24342d; --line-2:#30443b;
+  --ink:#e3ede8; --muted:#9bb0a6; --faint:#6d8378;
+  --brand:#3aa874; --brand-ink:#04140c; --brand-soft:#16301f; --brand-strong:#86d6ad;
+  --accent:#dfa944; --accent-soft:#33270f;
+  --ok:#4fc58c; --ok-soft:#12301f; --warn:#e9a640; --warn-soft:#33250e;
+  --crit:#f17c6d; --crit-soft:#3a1713; --info:#86b3f1; --info-soft:#15243a;
+  --side-bg:#07110d; --side-ink:#cfe1d7; --side-muted:#7c988b; --side-active:#153a29; --side-line:#122219;
+  --bar:#47b583; --bar-track:#1d2c25;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;overflow:hidden}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+.mono{font-family:var(--f-mono);font-size:.92em}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)} .faint{color:var(--faint)}
+.app{display:grid;grid-template-columns:250px minmax(0,1fr);height:100%}
+
+/* sidebar */
+.side{background:var(--side-bg);color:var(--side-ink);overflow-y:auto;padding:14px 10px 24px;padding-left:max(10px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
+.side-brand{display:flex;align-items:center;gap:10px;padding:6px 8px 12px;border-bottom:1px solid var(--side-line)}
+.side-brand .t{font-family:var(--f-display);font-weight:650;font-size:15px;line-height:1.15;color:#fff}
+.side-brand .s{font-size:11px;color:var(--side-muted);letter-spacing:.06em;text-transform:uppercase}
+.nav-group{display:flex;flex-direction:column;gap:2px}
+.nav-group h4{margin:6px 10px 4px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--side-muted);font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;color:var(--side-ink);padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13.5px}
+.nav-item:hover{background:rgba(255,255,255,.06)}
+.nav-item.on{background:var(--side-active);color:#fff;font-weight:600}
+.nav-item svg{width:16px;height:16px;flex:none;opacity:.85}
+.nav-item .badge{margin-left:auto;background:var(--accent);color:#1d1404;font-size:11px;font-weight:700;border-radius:20px;padding:0 7px;line-height:18px}
+
+/* main */
+.main{display:flex;flex-direction:column;min-width:0;height:100%}
+.topbar{display:flex;align-items:center;gap:12px;padding-block:10px;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));background:var(--surface);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.burger{display:none;background:none;border:1px solid var(--line);border-radius:8px;padding:6px 8px;cursor:pointer}
+.search{flex:1 1 220px;min-width:0;display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:6px 10px}
+.search input{border:0;background:none;outline:none;width:100%;min-width:0}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:5px 11px;border-radius:7px;cursor:pointer;font-weight:600;font-size:12.5px;color:var(--muted)}
+.seg button.on{background:var(--brand);color:var(--brand-ink)}
+.seg-label{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
+.iconbtn{position:relative;background:none;border:1px solid var(--line);border-radius:9px;padding:6px 8px;cursor:pointer;display:inline-flex}
+.iconbtn .dot{position:absolute;top:-5px;right:-5px;background:var(--crit);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:0 5px;line-height:16px}
+.me{display:flex;align-items:center;gap:8px}
+.me .n{font-weight:600;font-size:13px;line-height:1.1}
+.me .r{font-size:11.5px;color:var(--muted)}
+.view{flex:1;overflow-y:auto;padding-block:0 48px;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1320px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+/* brand strip + page head */
+.brandstrip{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 0 12px;border-bottom:1px solid var(--line)}
+.logos{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logos .div{width:1px;height:34px;background:var(--line-2)}
+.logo{display:flex;align-items:center;gap:9px}
+.logo img{height:38px;width:auto;max-width:180px;object-fit:contain}
+.logo .wm{display:flex;flex-direction:column;line-height:1.05}
+.logo .wm b{font-family:var(--f-display);font-weight:750;font-size:17px;letter-spacing:-.015em;color:var(--brand-strong)}
+.logo .wm small{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.strip-meta{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.pagehead h1{font-size:26px;font-weight:650}
+.crumbs{font-size:12px;color:var(--faint);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.pagehead p{margin:4px 0 0;color:var(--muted);max-width:70ch}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);padding:7px 13px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.primary:hover{background:var(--brand-strong);border-color:var(--brand-strong)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.danger{color:var(--crit);border-color:var(--crit)}
+.btn.warn{color:var(--warn);border-color:var(--warn)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.linkbtn{background:none;border:0;color:var(--brand);font-weight:600;cursor:pointer;padding:0}
+
+/* pills / chips */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap;background:var(--surface-2);color:var(--muted);border:1px solid transparent}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)} .pill.info{background:var(--info-soft);color:var(--info)}
+.pill.gold{background:var(--accent-soft);color:var(--accent)} .pill.brand{background:var(--brand-soft);color:var(--brand-strong)}
+.pill.plain::before{display:none}
+.chip{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+
+/* cards & grids */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.card h3{font-size:15px;font-weight:650;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.card h3 .sub{font-family:var(--f-body);font-size:12px;font-weight:500;color:var(--muted)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))} .g3{grid-template-columns:repeat(3,minmax(0,1fr))} .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;display:flex;flex-direction:column;gap:2px;cursor:pointer;text-align:left}
+.kpi:hover{border-color:var(--brand)}
+.kpi .l{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.kpi .v{font-family:var(--f-display);font-size:28px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi .d{font-size:12px;color:var(--muted)}
+.kpi.alert{border-left:3px solid var(--warn)} .kpi.critical{border-left:3px solid var(--crit)}
+.note{display:flex;gap:10px;align-items:flex-start;background:var(--info-soft);color:var(--ink);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-size:13px}
+.note.warn{background:var(--warn-soft)} .note.ok{background:var(--ok-soft)} .note.crit{background:var(--crit-soft)}
+.note b{font-weight:700}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;padding:9px 12px;background:var(--surface-2);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr.click{cursor:pointer} tbody tr.click:hover td{background:var(--brand-soft)}
+td.r,th.r{text-align:right} tfoot td{font-weight:700;background:var(--surface-2)}
+.person{display:flex;align-items:center;gap:9px;min-width:0}
+.av{width:30px;height:30px;border-radius:50%;background:var(--brand-soft);color:var(--brand-strong);display:grid;place-items:center;font-weight:700;font-size:11.5px;flex:none;overflow:hidden}
+.av.lg{width:72px;height:72px;font-size:22px}
+.av img{width:100%;height:100%;object-fit:cover}
+.person .pn{font-weight:600;line-height:1.15} .person .ps{font-size:11.5px;color:var(--muted)}
+
+/* toolbar / tabs */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar select,.toolbar input{background:var(--surface);border:1px solid var(--line-2);border-radius:8px;padding:6px 9px;min-width:0}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;cursor:pointer;color:var(--muted);font-weight:600;white-space:nowrap}
+.tabs button.on{color:var(--brand-strong);border-bottom-color:var(--brand)}
+
+/* bars (single hue, magnitude) */
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:grid;grid-template-columns:minmax(90px,150px) minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:12.5px}
+.bar-row .lb{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{height:12px;background:var(--bar-track);border-radius:4px;position:relative}
+.bar-fill{position:absolute;left:0;top:0;bottom:0;background:var(--bar);border-radius:0 4px 4px 0;min-width:3px}
+.bar-row .vv{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.bar-row:hover .bar-fill{filter:brightness(1.12)}
+
+/* lists */
+.list{display:flex;flex-direction:column}
+.li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);min-width:0}
+.li:last-child{border-bottom:0}
+.li .grow{flex:1;min-width:0}
+.li .t{font-weight:600;line-height:1.2}
+.li .s{font-size:12px;color:var(--muted)}
+
+/* forms */
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field label .req{color:var(--crit)}
+.field input,.field select,.field textarea{background:var(--surface);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+.field textarea{min-height:76px;resize:vertical}
+.field .hint{font-size:11.5px;color:var(--faint)}
+.field input[readonly]{background:var(--surface-2);color:var(--muted)}
+.sec-title{grid-column:1/-1;font-family:var(--f-display);font-weight:650;font-size:14px;color:var(--brand-strong);padding-top:6px;border-top:1px dashed var(--line);margin-top:4px}
+.sec-title:first-child{border-top:0;margin-top:0;padding-top:0}
+.calc{grid-column:1/-1;background:var(--brand-soft);border-radius:8px;padding:10px 12px;font-size:13px}
+
+/* overlay: modal + drawer */
+.scrim{position:fixed;inset:0;background:rgba(5,20,13,.45);z-index:40;display:flex;justify-content:flex-end}
+.scrim[hidden]{display:none!important}
+.drawer{background:var(--surface);width:min(620px,100%);height:100%;overflow-y:auto;box-shadow:var(--shadow);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.scrim.center{justify-content:center;align-items:center;padding:16px}
+.modal{background:var(--surface);width:min(760px,100%);max-height:calc(100% - 20px);overflow-y:auto;border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.ov-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2}
+.ov-head h2{font-size:18px}
+.ov-body{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.ov-foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--surface)}
+.kv{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr);gap:7px 14px;font-size:13px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
+
+/* maker-checker timeline */
+.flow{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:0;margin:2px 0}
+.step{position:relative;padding:0 6px;text-align:center;font-size:12px}
+.step .dotc{width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;font-weight:700;font-size:12px;background:var(--surface-2);border:2px solid var(--line-2);color:var(--muted);position:relative;z-index:1}
+.step::before{content:"";position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--line-2)}
+.step:first-child::before{display:none}
+.step.done .dotc{background:var(--ok);border-color:var(--ok);color:#fff}
+.step.done::before,.step.cur::before{background:var(--ok)}
+.step.cur .dotc{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.step.bad .dotc{background:var(--crit);border-color:var(--crit);color:#fff}
+.step .sl{font-weight:600;color:var(--ink)} .step .ss{color:var(--muted);font-size:11px}
+.hist{display:flex;flex-direction:column;gap:10px;border-left:2px solid var(--line);padding-left:14px;margin-left:6px}
+.hist .h{position:relative;font-size:12.5px}
+.hist .h::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--brand)}
+.hist .h.r::before{background:var(--crit)} .hist .h.w::before{background:var(--warn)}
+.hist .h .w1{font-weight:600}
+.hist .h .c{background:var(--surface-2);border-radius:7px;padding:6px 9px;margin-top:4px}
+
+/* permissions (mirrors the existing back-office screen) */
+.perm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px 18px}
+.cb{display:flex;align-items:center;gap:9px;padding:6px 4px;font-size:12.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;cursor:pointer;border-radius:6px}
+.cb:hover{background:var(--surface-2)}
+.cb input{width:17px;height:17px;accent-color:var(--brand);flex:none}
+.cb.lc{text-transform:none;font-weight:500;letter-spacing:0;font-size:13px}
+.perm-mod{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
+.perm-mod h5{margin:0 0 6px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--brand-strong)}
+
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:9px;font-weight:600;font-size:13px;z-index:60;box-shadow:var(--shadow);max-width:min(420px,calc(100% - 32px))}
+.empty{padding:22px;text-align:center;color:var(--muted);font-size:13px}
+.stage-card{display:flex;gap:10px;align-items:center;padding:10px;border:1px dashed var(--line-2);border-radius:8px;font-size:12.5px}
+.arrow{color:var(--faint)}
+.sysbox{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;background:var(--surface)}
+.sysbox .hd{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700}
+.sysbox ul{margin:0;padding-left:18px;color:var(--muted);font-size:12.5px}
+.check{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:13px}
+.check input{accent-color:var(--brand);width:16px;height:16px}
+
+@media (max-width:1100px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;inset:0 auto 0 0;width:270px;z-index:50;transform:translateX(-105%);transition:transform .2s;padding-top:calc(14px + env(safe-area-inset-top,0px))}
+  .side.open{transform:none;box-shadow:var(--shadow)}
+  .burger{display:inline-flex}
+  .me .txt{display:none}
+}
+@media (max-width:640px){
+  .g2,.g3,.g4,.form{grid-template-columns:minmax(0,1fr)}
+  .pagehead h1{font-size:22px}
+  .kv{grid-template-columns:minmax(0,1fr)} .kv dt{margin-top:6px}
+  .seg-label{display:none}
+  .logo .wm b{font-size:15px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Main menu"></aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Open menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <label class="search" for="q"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search staff by name, ID, title or branch" autocomplete="off"></label>
+      <span class="seg-label">Signed in as</span>
+      <div class="seg" id="roleseg" role="tablist" aria-label="Demo role">
+        <button data-role="staff">Staff</button><button data-role="hr">HR</button><button data-role="md">MD</button>
+      </div>
+      <button class="iconbtn" id="bell" aria-label="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><span class="dot" id="belldot" hidden>0</span></button>
+      <div class="me" id="me"></div>
+    </header>
+    <main class="view" id="view"></main>
+  </div>
+</div>
+<div class="scrim" id="drawerScrim" hidden><div class="drawer" id="drawer" role="dialog" aria-modal="true"></div></div>
+<div class="scrim center" id="modalScrim" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ================= SAMPLE DATA (demo only) ================= */
+const TODAY = new Date(2026, 9, 29);
+const ISO = d => { const x = new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); };
+const BRANCHES = ['Saasa Plaza (HQ)', 'Old Taxi Park', 'Kikuubo'];
+const DEPTS = ['Executive','HR & Admin','Finance','Credit & Loans','Operations','PlusPay Remittances','Customer Service','Business Development & Marketing','ICT','Risk & Compliance'];
+const TYPES = ['Permanent','Contract','Probationary','Part-time','Intern'];
+const STATUSES = ['Active','On Leave','Suspended','Resigned','Terminated'];
+const LEAVE_TYPES = {
+  Annual:{days:21, note:'21 working days a year (7 days per 4 months of service)'},
+  Sick:{days:30, note:'Up to 2 months a year; first month paid. Medical form needed beyond 2 days'},
+  Maternity:{days:60, note:'60 working days, full pay', g:'F'},
+  Paternity:{days:4, note:'4 working days, full pay', g:'M'},
+  Unpaid:{days:30, note:'Deducted from payroll; MD approval required'},
+  Other:{days:6, note:'Compassionate, study or exam leave as per HR policy'}
+};
+const HOLIDAYS = ['2026-10-09','2026-12-25','2026-12-26','2027-01-01','2027-01-26','2027-02-16','2027-03-08'];
+const GRADES = {
+  G1:{name:'Executive', tr:800000, hs:1500000, at:150000},
+  G2:{name:'Senior Management', tr:500000, hs:800000, at:100000},
+  G3:{name:'Management', tr:350000, hs:500000, at:80000},
+  G4:{name:'Officer', tr:200000, hs:250000, at:50000},
+  G5:{name:'Support', tr:120000, hs:0, at:30000},
+  G6:{name:'Intern', tr:100000, hs:0, at:20000}
+};
+const NOK = [['Sarah Mugisha','Spouse'],['Peter Achieng','Brother'],['Agnes Kato','Mother'],['John Namubiru','Spouse'],['Mary Ssekandi','Mother'],['Paul Atim','Father'],['Ruth Opio','Spouse'],['Jane Akello','Sister'],['Moses Mutebi','Father'],['Joan Nansubuga','Mother'],['Faith Tumusiime','Spouse'],['Tom Nakimuli','Father'],['Lydia Wanyama','Spouse'],['Ronald Nakato','Brother'],['Grace Auma','Mother'],['Esther Ochieng','Spouse'],['Ivan Kyomuhendo','Brother']];
+const ADDR = ['Ntinda, Kampala','Kira, Wakiso','Najjera, Wakiso','Mengo, Kampala','Bukoto, Kampala','Kisaasi, Kampala','Nansana, Wakiso','Kawempe, Kampala','Muyenga, Kampala','Kansanga, Kampala','Mukono','Seeta, Mukono','Bweyogerere, Wakiso','Kyebando, Kampala','Entebbe','Kireka, Wakiso','Makindye, Kampala'];
+
+let _n = 0;
+function E(id, fn, ln, g, dob, title, dept, branch, sup, type, joined, grade, basic, x = {}) {
+  const n = _n++;
+  return Object.assign({
+    id, fn, ln, g, dob, title, dept, branch, sup, type, joined, grade, basic,
+    status:'Active', nin:`CM${g}${dob.slice(2,4)}••••••${id.slice(-3)}K`,
+    phone:`07${['72','01','53','89','74','00'][n%6]} ${String(n*137%900+100)} ${String(n*419%900+100)}`,
+    email:`${fn}.${ln}`.toLowerCase()+'@plussavefinancialsolutions.com',
+    addr:ADDR[n%ADDR.length], nok:{n:NOK[n%NOK.length][0], rel:NOK[n%NOK.length][1], p:`07${['01','72','74'][n%3]} ${String(n*251%900+100)} ${String(n*613%900+100)}`},
+    cEnd:null, pStart:null, pEnd:null, appr:'2026-12-15', bal:{Annual:21-(n%9), Sick:30, Other:6},
+    loan:0, sav:0, photo:null, acct:`••••${String(4400+n*37).slice(-4)}`,
+    docs:{CV:1,'Academic documents':1,'Appointment letter':1,Contract:type==='Contract'?1:0,NDA:1,'Job description':1,'National ID copy':1,Appraisals:n%3?1:0,'Disciplinary letters':0,'Exit documents':0},
+    trainings:[], movements:[]
+  }, x);
+}
+const EMP = [
+  E('PSF-0001','Daniel','Mugisha','M','1978-03-14','Managing Director','Executive',BRANCHES[0],null,'Permanent','2015-02-01','G1',9500000,{appr:'2027-01-31'}),
+  E('PSF-0007','Ruth','Achieng','F','1986-07-22','HR & Admin Manager','HR & Admin',BRANCHES[0],'PSF-0001','Permanent','2017-05-02','G2',4200000),
+  E('PSF-0015','Joseph','Kato','M','1983-11-02','Finance Manager','Finance',BRANCHES[0],'PSF-0001','Permanent','2016-08-15','G2',4500000,{loan:350000}),
+  E('PSF-0021','Grace','Namubiru','F','1985-01-19','Credit Manager','Credit & Loans',BRANCHES[0],'PSF-0001','Permanent','2018-03-01','G2',4000000,{status:'On Leave',appr:'2026-11-10'}),
+  E('PSF-0034','Ivan','Ssekandi','M','1992-06-30','ICT Officer','ICT',BRANCHES[0],'PSF-0015','Contract','2024-12-16','G4',2600000,{cEnd:'2026-12-15',appr:'2026-11-20'}),
+  E('PSF-0048','Sharon','Atim','F','1994-09-12','Accountant','Finance',BRANCHES[0],'PSF-0015','Permanent','2021-01-11','G4',2200000,{sav:100000}),
+  E('PSF-0056','Moses','Opio','M','1993-04-05','Loans Officer','Credit & Loans',BRANCHES[1],'PSF-0021','Permanent','2020-06-01','G4',1600000,{loan:180000,appr:'2026-11-05'}),
+  E('PSF-0063','Patience','Akello','F','1996-12-08','PlusPay Remittance Officer','PlusPay Remittances',BRANCHES[1],'PSF-0071','Contract','2025-01-21','G4',1800000,{cEnd:'2027-01-20'}),
+  E('PSF-0071','Allan','Mutebi','M','1988-02-27','Branch Manager','Operations',BRANCHES[1],'PSF-0001','Permanent','2019-09-02','G3',3200000,{loan:250000}),
+  E('PSF-0088','Esther','Nansubuga','F','1998-05-17','Marketing Officer','Business Development & Marketing',BRANCHES[0],'PSF-0001','Probationary','2026-05-12','G4',1500000,{pStart:'2026-05-12',pEnd:'2026-11-12',bal:{Annual:7,Sick:30,Other:6}}),
+  E('PSF-0102','Brian','Tumusiime','M','1995-08-23','Teller','Operations',BRANCHES[2],'PSF-0071','Permanent','2022-02-14','G5',1100000,{sav:50000,appr:'2026-11-08'}),
+  E('PSF-0117','Juliet','Nakimuli','F','1999-10-03','Customer Service Officer','Customer Service',BRANCHES[2],'PSF-0071','Probationary','2026-06-01','G5',1000000,{pStart:'2026-06-01',pEnd:'2026-11-30',bal:{Annual:7,Sick:30,Other:6}}),
+  E('PSF-0129','Collins','Wanyama','M','1991-03-29','Recoveries Officer','Credit & Loans',BRANCHES[2],'PSF-0021','Contract','2025-11-29','G4',1300000,{cEnd:'2026-11-28'}),
+  E('PSF-0142','Brenda','Nakato','F','1997-01-15','Customer Service Officer','Customer Service',BRANCHES[1],'PSF-0071','Permanent','2023-04-03','G5',1050000,{bal:{Annual:14,Sick:28,Other:6},appr:'2026-11-18'}),
+  E('PSF-0150','Hilda','Auma','F','2002-07-07','Accounts Intern','Finance',BRANCHES[0],'PSF-0048','Intern','2026-08-01','G6',400000,{cEnd:'2027-01-31',bal:{Annual:0,Sick:10,Other:2}}),
+  E('PSF-0153','Peter','Ochieng','M','1990-12-01','Office Messenger','HR & Admin',BRANCHES[0],'PSF-0007','Part-time','2025-03-03','G5',450000),
+  E('PSF-0160','Sylvia','Kyomugisha','F','1989-05-09','Compliance Officer','Risk & Compliance',BRANCHES[0],'PSF-0001','Permanent','2026-10-05','G4',2400000,{bal:{Annual:2,Sick:30,Other:6}}),
+  E('PSF-0098','Rose','Kyomuhendo','F','1995-02-11','Teller','Operations',BRANCHES[1],'PSF-0071','Permanent','2021-07-05','G5',1100000,{status:'Resigned'})
+];
+EMP.forEach(e => { if (e.status === 'Resigned') e.docs['Exit documents'] = 1; });
+EMP.find(e=>e.id==='PSF-0102').docs['Disciplinary letters'] = 1;
+
+const USERS = {
+  staff:{emp:'PSF-0142', role:'staff', label:'Staff'},
+  hr:{emp:'PSF-0007', role:'hr', label:'HR Manager'},
+  md:{emp:'PSF-0001', role:'md', label:'Managing Director'}
+};
+
+const ATT = { /* today's clock-in/out */
+  'PSF-0001':['08:12',null,'Biometric'],'PSF-0007':['07:54',null,'Biometric'],'PSF-0015':['08:05',null,'Biometric'],
+  'PSF-0034':['08:31',null,'Biometric'],'PSF-0048':['07:58',null,'Biometric'],'PSF-0056':['08:47',null,'Biometric'],
+  'PSF-0063':['08:02',null,'Mobile (geo-fenced)'],'PSF-0071':['07:40',null,'Biometric'],'PSF-0088':['08:15',null,'Biometric'],
+  'PSF-0102':['08:09',null,'Biometric'],'PSF-0117':['08:58',null,'Biometric'],'PSF-0142':['07:59',null,'Biometric'],
+  'PSF-0150':['08:20',null,'Biometric'],'PSF-0160':['08:03',null,'Biometric']
+};
+const SHIFT_START = '08:30';
+
+const LEAVES = [
+  {id:'LV-311', emp:'PSF-0021', type:'Annual', from:'2026-10-27', to:'2026-11-06', days:9, status:'Approved'},
+  {id:'LV-305', emp:'PSF-0048', type:'Sick', from:'2026-10-12', to:'2026-10-13', days:2, status:'Approved'},
+  {id:'LV-298', emp:'PSF-0015', type:'Annual', from:'2026-12-21', to:'2027-01-08', days:12, status:'Approved'},
+  {id:'LV-290', emp:'PSF-0142', type:'Annual', from:'2026-08-10', to:'2026-08-14', days:5, status:'Approved'},
+  {id:'LV-284', emp:'PSF-0071', type:'Paternity', from:'2026-09-01', to:'2026-09-04', days:4, status:'Approved'}
+];
+
+const APPRAISALS = [
+  {emp:'PSF-0056', cycle:'H2 2026', due:'2026-11-05', status:'Self-appraisal submitted', score:null},
+  {emp:'PSF-0102', cycle:'H2 2026', due:'2026-11-08', status:'Not started', score:null},
+  {emp:'PSF-0021', cycle:'H2 2026', due:'2026-11-10', status:'Not started', score:null},
+  {emp:'PSF-0088', cycle:'Probation review', due:'2026-11-05', status:'Supervisor review', score:null},
+  {emp:'PSF-0142', cycle:'H2 2026', due:'2026-11-18', status:'Not started', score:null},
+  {emp:'PSF-0034', cycle:'Contract review', due:'2026-11-20', status:'Not started', score:null},
+  {emp:'PSF-0048', cycle:'H1 2026', due:'2026-06-30', status:'Completed', score:4.2},
+  {emp:'PSF-0071', cycle:'H1 2026', due:'2026-06-30', status:'Completed', score:4.5},
+  {emp:'PSF-0063', cycle:'H1 2026', due:'2026-06-30', status:'Completed', score:3.8}
+];
+
+const TRAININGS = [
+  {id:'TR-21', title:'AML/CFT and KYC refresher', provider:'Risk & Compliance (internal)', date:'2026-11-20', mandatory:true, status:'Scheduled', audience:'All staff', done:[]},
+  {id:'TR-20', title:'Interswitch agency banking and Verve card operations', provider:'Interswitch', date:'2026-11-12', mandatory:false, status:'Scheduled', audience:'Operations, Customer Service', done:[]},
+  {id:'TR-19', title:'PlusPay remittance compliance (China corridor)', provider:'PlusPay team', date:'2026-09-18', mandatory:false, status:'Completed', audience:'PlusPay, Operations', done:['PSF-0063','PSF-0071','PSF-0102','PSF-0142']},
+  {id:'TR-18', title:'Customer service excellence', provider:'External facilitator', date:'2026-07-24', mandatory:false, status:'Completed', audience:'Customer Service', done:['PSF-0117','PSF-0142','PSF-0098']},
+  {id:'TR-17', title:'Fire safety and first aid', provider:'Uganda Red Cross', date:'2026-05-15', mandatory:true, status:'Completed', audience:'All staff', done:['PSF-0001','PSF-0007','PSF-0015','PSF-0021','PSF-0048','PSF-0056','PSF-0071','PSF-0102','PSF-0142','PSF-0153']},
+  {id:'TR-16', title:'Credit appraisal and loan recovery', provider:'Credit department', date:'2026-03-10', mandatory:false, status:'Completed', audience:'Credit & Loans', done:['PSF-0021','PSF-0056','PSF-0129']}
+];
+
+const VACANCIES = [
+  {id:'VC-09', title:'Agency Banking Supervisor', dept:'Operations', branch:BRANCHES[0], opened:'2026-10-06', closes:'2026-11-10', applicants:23, stage:'Shortlisting', reason:'New role for Interswitch agency banking rollout'},
+  {id:'VC-08', title:'Internal Auditor', dept:'Risk & Compliance', branch:BRANCHES[0], opened:'2026-09-21', closes:'2026-10-31', applicants:14, stage:'Interviews', reason:'Regulatory requirement'},
+  {id:'VC-07', title:'Teller', dept:'Operations', branch:BRANCHES[1], opened:'2026-10-12', closes:'2026-11-05', applicants:41, stage:'Advertised', reason:'Replacement: Rose Kyomuhendo (resigned)'}
+];
+
+const CASES = [
+  {id:'DC-014', kind:'Disciplinary', emp:'PSF-0129', category:'Absenteeism and late reporting', incident:'2026-10-14', reportedBy:'PSF-0021', involved:['PSF-0129'], witnesses:['PSF-0102'], desc:'Absent without permission on 14 and 15 Oct; late on 6 of the last 10 working days.', stage:'Hearing', hearing:{date:'2026-11-04', panel:['PSF-0007','PSF-0071'], minutes:''}, decision:null, due:'2026-11-04'},
+  {id:'DC-013', kind:'Disciplinary', emp:'PSF-0102', category:'Cash shortage (UGX 150,000)', incident:'2026-08-19', reportedBy:'PSF-0071', involved:['PSF-0102'], witnesses:[], desc:'Till shortage at Kikuubo on close of business.', stage:'Closed', hearing:{date:'2026-08-27', panel:['PSF-0007','PSF-0071'], minutes:'Employee admitted counting error. Refunded in full.'}, decision:'Written warning (valid 6 months) and refund', due:null},
+  {id:'GR-006', kind:'Grievance', emp:'PSF-0063', category:'Pay and overtime', incident:'2026-10-20', reportedBy:'PSF-0063', involved:['PSF-0063'], witnesses:[], desc:'Weekend remittance shifts in September not reflected as overtime.', stage:'Investigation', hearing:null, decision:null, due:'2026-11-03', confidential:false}
+];
+const CASE_STAGES = {Disciplinary:['Incident','People involved','Hearing','Decision','Closed'], Grievance:['Lodged','Investigation','Meeting','Resolution','Closed']};
+
+const EXITS = [
+  {id:'EX-07', emp:'PSF-0098', type:'Resignation', notice:'2026-09-10', lwd:'2026-10-10', reason:'Further studies abroad', interview:'Would return. Rated supervisor support 4/5; suggested clearer career path for tellers.', status:'Completed',
+   clear:{'Handover notes submitted':1,'Laptop, keys and ID card returned':1,'Core banking user disabled':1,'PlusPay user disabled':1,'Email account closed':1,'Staff loan balance settled':1,'Final dues computed':1,'Exit interview done':1,'Certificate of service issued':1}}
+];
+
+const LIBRARY = [
+  {id:'DOC-01', title:'HR Policy Manual', ver:'3.2', cat:'Manual', owner:'HR & Admin', approved:'2026-02-10', ack:15},
+  {id:'DOC-02', title:'Code of Conduct and Ethics', ver:'2.0', cat:'Policy', owner:'HR & Admin', approved:'2025-11-03', ack:17},
+  {id:'DOC-03', title:'Leave Policy', ver:'1.4', cat:'Policy', owner:'HR & Admin', approved:'2026-07-01', ack:12},
+  {id:'DOC-04', title:'Disciplinary and Grievance Procedure', ver:'1.1', cat:'Procedure', owner:'HR & Admin', approved:'2025-06-20', ack:16},
+  {id:'DOC-05', title:'Staff Loans and Advances Policy', ver:'1.3', cat:'Policy', owner:'Finance', approved:'2026-04-14', ack:11},
+  {id:'DOC-06', title:'AML/CFT and KYC Policy', ver:'4.0', cat:'Policy', owner:'Risk & Compliance', approved:'2026-09-01', ack:9},
+  {id:'DOC-07', title:'Data Protection and Privacy Policy', ver:'1.0', cat:'Policy', owner:'ICT', approved:'2026-03-02', ack:14},
+  {id:'DOC-08', title:'Staff Induction Handbook', ver:'2.1', cat:'Handbook', owner:'HR & Admin', approved:'2026-01-15', ack:17},
+  {id:'DOC-09', title:'Appointment letter template', ver:'1.2', cat:'Template', owner:'HR & Admin', approved:'2025-10-01', ack:null},
+  {id:'DOC-10', title:'Exit clearance form', ver:'1.0', cat:'Form', owner:'HR & Admin', approved:'2025-10-01', ack:null}
+];
+
+const PAYROLL_HIST = [
+  {period:'2026-07', staff:16, gross:57140000, net:40112000, status:'Posted'},
+  {period:'2026-08', staff:17, gross:57540000, net:40391000, status:'Posted'},
+  {period:'2026-09', staff:17, gross:57540000, net:40394000, status:'Posted'}
+];
+let PAY = {period:'2026-10', status:'Draft', reqId:null, inputs:[
+  {emp:'PSF-0063', kind:'Overtime', amt:240000, note:'Weekend remittance shifts, 4 Sat'},
+  {emp:'PSF-0056', kind:'Commission', amt:150000, note:'Loan book growth target met'},
+  {emp:'PSF-0098', kind:'Leave pay', amt:211538, note:'5 unused annual leave days on exit'},
+  {emp:'PSF-0102', kind:'Deduction', amt:50000, note:'Salary advance recovery (2 of 3)'}
+]};
+
+const CONFIG = {
+  paye:[[335000,0],[410000,.20],[485000,.25],[Infinity,.30]], surtaxOver:10000000, surtax:.10,
+  nssfEe:.05, nssfEr:.10, lstMonths:[7,8,9,10], lstDeductible:true,
+  lst:[[100000,0],[200000,5000],[300000,10000],[400000,20000],[500000,30000],[600000,40000],[700000,60000],[800000,70000],[900000,80000],[1000000,90000],[Infinity,100000]],
+  leaveDivisor:26, gratuity:{basis:'pct', pct:25, months:1},
+  sla:{hr:48, md:48}, weekend:[0,6]
+};
+
+const WORKFLOWS = [
+  ['Leave application','Staff','HR verifies balance and cover','MD approves'],
+  ['Attendance correction','Staff','HR checks device log','MD approves'],
+  ['Personal details change','Staff','HR checks supporting document','MD approves'],
+  ['Training request','Staff','HR checks plan and budget','MD approves'],
+  ['Grievance','Staff','HR investigates','MD approves resolution'],
+  ['Resignation','Staff','HR runs exit clearance','MD approves final dues'],
+  ['New employee','HR','','MD approves'],
+  ['Transfer, promotion or salary change','HR','','MD approves'],
+  ['Contract renewal or probation confirmation','HR','','MD approves'],
+  ['Disciplinary decision','HR','','MD approves'],
+  ['Monthly payroll','HR','','MD approves, then posts to core banking'],
+  ['Gratuity or leave pay','HR','','MD approves'],
+  ['Policy or document published to HR Library','HR','','MD approves']
+];
+
+const PERMS = {
+  'Employee records':['ADD EMPLOYEE','EDIT EMPLOYEE FILE','VIEW EMPLOYEE FILE','EMPLOYEE POSITIONS','UPLOAD EMPLOYEE DOCUMENTS','DEACTIVATE EMPLOYEE'],
+  'Payroll':['BASIC SALARY SETUP','EMPLOYEE GRADE SETUP','EMPLOYEE GRADE ALLOWANCES','EMPLOYEE GRADE DEDUCTIONS','DEDUCTION SETUP','EMPLOYEE SALARY','ADJUST SALARY ITEM','PAYROLL INPUT','RUN PAYROLL','POST PAYROLL TO CORE BANKING','PAYSLIPS'],
+  'Time and leave':['ATTENDANCE','ATTENDANCE CORRECTION','LEAVE SETUP','APPLY LEAVE','LEAVE APPROVAL'],
+  'Talent':['PERFORMANCE APPRAISAL','PROBATION AND CONTRACTS','TRAINING AND DEVELOPMENT','RECRUITMENT','TRANSFERS AND PROMOTIONS'],
+  'Relations and exits':['DISCIPLINARY CASES','GRIEVANCES','EXIT MANAGEMENT','GRATUITY CALCULATION'],
+  'Library and reports':['HR LIBRARY UPLOAD','HR LIBRARY VIEW','HR REPORTS','HR DASHBOARD','AUDIT TRAIL'],
+  'Administration':['USER ROLES AND PERMISSIONS','WORKFLOW SETUP','INTEGRATION SETTINGS']
+};
+const ROLE_PERMS = {
+  'Staff (self-service)':{p:['APPLY LEAVE','HR LIBRARY VIEW','PAYSLIPS','ATTENDANCE CORRECTION','GRIEVANCES'], a:['Initiate']},
+  'HR Manager':{p:['ADD EMPLOYEE','EDIT EMPLOYEE FILE','VIEW EMPLOYEE FILE','EMPLOYEE POSITIONS','UPLOAD EMPLOYEE DOCUMENTS','BASIC SALARY SETUP','EMPLOYEE GRADE SETUP','EMPLOYEE GRADE ALLOWANCES','EMPLOYEE GRADE DEDUCTIONS','DEDUCTION SETUP','EMPLOYEE SALARY','ADJUST SALARY ITEM','PAYROLL INPUT','RUN PAYROLL','PAYSLIPS','ATTENDANCE','ATTENDANCE CORRECTION','LEAVE SETUP','LEAVE APPROVAL','PERFORMANCE APPRAISAL','PROBATION AND CONTRACTS','TRAINING AND DEVELOPMENT','RECRUITMENT','TRANSFERS AND PROMOTIONS','DISCIPLINARY CASES','GRIEVANCES','EXIT MANAGEMENT','GRATUITY CALCULATION','HR LIBRARY UPLOAD','HR LIBRARY VIEW','HR REPORTS','HR DASHBOARD'], a:['Initiate','Verify','Export reports']},
+  'Managing Director':{p:['VIEW EMPLOYEE FILE','LEAVE APPROVAL','RUN PAYROLL','POST PAYROLL TO CORE BANKING','TRANSFERS AND PROMOTIONS','DISCIPLINARY CASES','GRIEVANCES','EXIT MANAGEMENT','GRATUITY CALCULATION','HR LIBRARY VIEW','HR REPORTS','HR DASHBOARD','AUDIT TRAIL'], a:['Approve','Export reports','Delegate approvals']},
+  'Finance (payroll posting)':{p:['PAYSLIPS','HR REPORTS','POST PAYROLL TO CORE BANKING'], a:['View only','Export reports']},
+  'Internal Auditor':{p:['VIEW EMPLOYEE FILE','HR REPORTS','AUDIT TRAIL','HR LIBRARY VIEW'], a:['View only','Export reports']},
+  'System Admin (IT)':{p:['USER ROLES AND PERMISSIONS','WORKFLOW SETUP','INTEGRATION SETTINGS','AUDIT TRAIL'], a:['Initiate']}
+};
+const PRIVS = ['Initiate','Verify','Approve','View only','Export reports','Delegate approvals'];
+
+const SYSTEMS = [
+  {name:'Core banking (Interswitch)', state:'ok', flows:['Salary credited to each staff account after MD approves payroll','Staff loan repayments pulled from the loan schedule into payroll deductions','New staff get a core banking user on onboarding; disabled on exit']},
+  {name:'PlusPay', state:'ok', flows:['Creates Agent or Branch Manager logins from the employee record','Disables PlusPay access the day an exit is approved','Remittance overtime and commissions feed payroll input']},
+  {name:'Biometric clock-in devices', state:'ok', flows:['Clock-in and clock-out synced every 15 minutes per branch','Mobile clock-in allowed only inside branch geo-fence']},
+  {name:'URA, NSSF and KCCA returns', state:'warn', flows:['PAYE return file for URA e-filing by the 15th','NSSF contribution schedule (5% + 10%)','Local Service Tax schedule, July to October']},
+  {name:'Accounting / general ledger', state:'ok', flows:['Payroll journal by cost centre (branch and department)','Gratuity and leave-pay provisions']},
+  {name:'Email and SMS (company mail server)', state:'ok', flows:['Approval requests and outcomes by email and SMS','Alerts for contract expiry, probation end and appraisals']}
+];
+
+let REQS = [];
+let AUDIT = [];
+let NOTES = [];
+
+/* ================= CORE HELPERS ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const N = n => Math.round(n || 0).toLocaleString('en-US');
+const UGX = n => 'UGX ' + N(n);
+const D = s => s ? new Date(s).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : '-';
+const DT = s => s ? new Date(s).toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : '-';
+const days = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+const fromToday = s => days(ISO(TODAY), s);
+const now = () => { const t = new Date(); return new Date(2026, 9, 29, t.getHours(), t.getMinutes(), t.getSeconds()).toISOString(); };
+function workingDays(a, b) {
+  if (!a || !b) return 0; let n = 0; const d = new Date(a), end = new Date(b);
+  if (end < d) return 0;
+  while (d <= end) { if (!CONFIG.weekend.includes(d.getDay()) && !HOLIDAYS.includes(ISO(d))) n++; d.setDate(d.getDate() + 1); }
+  return n;
+}
+const emp = id => EMP.find(e => e.id === id);
+const nm = e => e ? `${e.fn} ${e.ln}` : '-';
+const ini = e => e ? (e.fn[0] + e.ln[0]).toUpperCase() : '?';
+const age = e => Math.floor(days(e.dob, ISO(TODAY)) / 365.25);
+const tenure = e => days(e.joined, ISO(TODAY)) / 365.25;
+const activeEmp = () => EMP.filter(e => !['Resigned','Terminated'].includes(e.status));
+const av = (e, cls = '') => `<span class="av ${cls}">${e && e.photo ? `<img src="${e.photo}" alt="">` : ini(e)}</span>`;
+const person = (e, sub) => `<div class="person">${av(e)}<div style="min-width:0"><div class="pn">${esc(nm(e))}</div><div class="ps">${esc(sub ?? (e ? e.title : ''))}</div></div></div>`;
+const me = () => emp(USERS[S.role].emp);
+const roleOfEmp = id => id === USERS.hr.emp ? 'hr' : id === USERS.md.emp ? 'md' : 'staff';
+const ROLE_NAME = {staff:'Staff', hr:'HR', md:'MD'};
+const pill = (t, k = '') => `<span class="pill ${k}">${esc(t)}</span>`;
+const empStatusPill = s => pill(s, {Active:'ok','On Leave':'info',Suspended:'warn',Resigned:'',Terminated:'crit'}[s]);
+function reqStatus(r) {
+  if (r.status === 'pending') return r.chain[r.stage] === 'hr' ? pill('Pending HR review','gold') : pill('Pending MD approval','gold');
+  return {approved:pill('Approved','ok'), rejected:pill('Rejected','crit'), returned:pill('Returned for correction','warn'), draft:pill('Draft')}[r.status];
+}
+function sla(r) {
+  if (r.status !== 'pending') return '';
+  const last = r.hist[r.hist.length - 1].at; const role = r.chain[r.stage];
+  const left = CONFIG.sla[role] - (new Date(now()) - new Date(last)) / 36e5;
+  return left < 0 ? pill(`Overdue ${Math.round(-left)}h`, 'crit') : pill(`${Math.round(left)}h left`, left < 12 ? 'warn' : 'plain');
+}
+function toast(m) { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 3200); }
+function audit(action, ref, detail) { AUDIT.unshift({at:now(), by:USERS[S.role].emp, role:S.role, action, ref, detail}); }
+function notify(to, text) { NOTES.unshift({to, text, at:now(), read:false}); }
+
+/* ================= PAYROLL ENGINE ================= */
+function payeOf(c) {
+  let t = 0, prev = 0;
+  for (const [cap, rate] of CONFIG.paye) { if (c > prev) t += (Math.min(c, cap) - prev) * rate; prev = cap; }
+  if (c > CONFIG.surtaxOver) t += (c - CONFIG.surtaxOver) * CONFIG.surtax;
+  return Math.round(t);
+}
+function lstAnnual(m) { for (const [cap, amt] of CONFIG.lst) if (m <= cap) return amt; return 0; }
+const allw = e => { const g = GRADES[e.grade]; return e.type === 'Part-time' ? {tr:g.tr, hs:0, at:g.at} : {tr:g.tr, hs:g.hs, at:g.at}; };
+function payLine(e, inputs, period) {
+  const month = +period.slice(5, 7); const a = allw(e);
+  let f = 1, final = false;
+  const ex = EXITS.find(x => x.emp === e.id);
+  if (ex && ex.lwd && ex.lwd.slice(0, 7) === period) { const dim = new Date(+period.slice(0,4), month, 0).getDate(); f = +ex.lwd.slice(8, 10) / dim; final = true; }
+  const basic = Math.round(e.basic * f), allowances = Math.round((a.tr + a.hs + a.at) * f);
+  const mine = inputs.filter(i => i.emp === e.id);
+  const extra = mine.filter(i => i.kind !== 'Deduction').reduce((s, i) => s + i.amt, 0);
+  const otherDed = mine.filter(i => i.kind === 'Deduction').reduce((s, i) => s + i.amt, 0);
+  const gross = basic + allowances + extra;
+  const lst = CONFIG.lstMonths.includes(month) && !final ? Math.round(lstAnnual(e.basic + a.tr + a.hs + a.at) / CONFIG.lstMonths.length) : 0;
+  const chargeable = gross - (CONFIG.lstDeductible ? lst : 0);
+  const paye = payeOf(chargeable);
+  const nssfEe = Math.round(gross * CONFIG.nssfEe), nssfEr = Math.round(gross * CONFIG.nssfEr);
+  const loan = final ? 0 : e.loan, sav = final ? 0 : e.sav;
+  const ded = paye + nssfEe + lst + loan + sav + otherDed;
+  return {e, basic, allowances, extra, gross, chargeable, paye, nssfEe, nssfEr, lst, loan, sav, otherDed, ded, net:gross - ded, final};
+}
+function payRegister(period = PAY.period) {
+  const people = EMP.filter(e => !['Resigned','Terminated'].includes(e.status) || EXITS.some(x => x.emp === e.id && x.lwd && x.lwd.slice(0,7) === period));
+  const lines = people.map(e => payLine(e, PAY.inputs, period));
+  const tot = k => lines.reduce((s, l) => s + l[k], 0);
+  return {lines, tot:{gross:tot('gross'), paye:tot('paye'), nssfEe:tot('nssfEe'), nssfEr:tot('nssfEr'), lst:tot('lst'), loan:tot('loan'), sav:tot('sav'), otherDed:tot('otherDed'), net:tot('net'), extra:tot('extra')}};
+}
+function gratuityFor(e, basis = CONFIG.gratuity.basis, rate) {
+  const yrs = Math.floor(tenure(e) * 100) / 100;
+  const amt = basis === 'pct' ? e.basic * 12 * ((rate ?? CONFIG.gratuity.pct) / 100) * yrs : e.basic * (rate ?? CONFIG.gratuity.months) * yrs;
+  return {yrs, amt:Math.round(amt)};
+}
+const leavePay = (e, d) => Math.round(e.basic / CONFIG.leaveDivisor * d);
+
+/* ================= MAKER-CHECKER ENGINE ================= */
+let RID = 1031;
+function newReq({type, subject, maker, fields, payload = {}, note = '', at}) {
+  const makerRole = roleOfEmp(maker);
+  const chain = makerRole === 'staff' ? ['hr','md'] : makerRole === 'hr' ? ['md'] : ['hr'];
+  const r = {id:'R-' + (RID++), type, subject, maker, makerRole, created:at || now(), fields, payload, chain, stage:0, status:'pending',
+             hist:[{by:maker, act:'Submitted', at:at || now(), c:note}]};
+  REQS.unshift(r);
+  if (!at) { notify(chain[0], `${r.id} ${type}: ${subject} is waiting for your ${chain[0]==='hr'?'review':'approval'}`); audit('Submitted', r.id, `${type}: ${subject}`); }
+  return r;
+}
+const stageRole = r => r.status === 'pending' ? r.chain[r.stage] : null;
+const isMine = (r, role = S.role) => r.maker === USERS[role].emp;
+const canAct = (r, role = S.role) => stageRole(r) === role && !isMine(r, role);
+const awaiting = (role = S.role) => REQS.filter(r => canAct(r, role));
+function act(r, action, c) {
+  const by = USERS[S.role].emp;
+  if (!canAct(r)) { toast('You cannot act on this request at its current stage.'); return; }
+  if ((action === 'reject' || action === 'return') && !c.trim()) { toast('Add a comment so the maker knows what to fix.'); return false; }
+  if (action === 'forward') {
+    r.hist.push({by, act:`Verified by ${ROLE_NAME[S.role]}, forwarded to MD`, at:now(), c}); r.stage++;
+    notify('md', `${r.id} ${r.type}: ${r.subject} verified by HR, waiting for your approval`);
+  } else if (action === 'approve') {
+    r.hist.push({by, act:`Approved by ${ROLE_NAME[S.role]}`, at:now(), c}); r.status = 'approved';
+    (EFFECTS[r.type] || (() => {}))(r);
+    notify(r.maker, `${r.id} ${r.type} was approved`); if (r.makerRole === 'staff') notify('hr', `${r.id} ${r.type} for ${nm(emp(r.maker))} approved by MD`);
+  } else if (action === 'return') {
+    if (S.role === 'md' && r.chain[0] === 'hr' && r.stage > 0) { r.stage = 0; r.hist.push({by, act:'Returned to HR by MD', at:now(), c, k:'w'}); notify('hr', `${r.id} returned to you by MD`); }
+    else { r.status = 'returned'; r.hist.push({by, act:`Returned to maker by ${ROLE_NAME[S.role]}`, at:now(), c, k:'w'}); notify(r.maker, `${r.id} ${r.type} was returned for correction`); }
+  } else if (action === 'reject') {
+    r.status = 'rejected'; r.hist.push({by, act:`Rejected by ${ROLE_NAME[S.role]}`, at:now(), c, k:'r'}); notify(r.maker, `${r.id} ${r.type} was rejected`);
+    if (r.type === 'Monthly payroll') PAY.status = 'Draft';
+  }
+  audit({forward:'Verified and forwarded', approve:'Approved', return:'Returned', reject:'Rejected'}[action], r.id, `${r.type}: ${r.subject}${c ? ' | ' + c : ''}`);
+  return true;
+}
+function resubmit(r, c) { r.status = 'pending'; r.stage = 0; r.hist.push({by:r.maker, act:'Corrected and resubmitted', at:now(), c}); notify(r.chain[0], `${r.id} resubmitted after correction`); audit('Resubmitted', r.id, r.subject); }
+
+const EFFECTS = {
+  'Leave application': r => { const e = emp(r.payload.emp), p = r.payload;
+    if (['Annual','Sick','Other'].includes(p.type)) e.bal[p.type] = Math.max(0, (e.bal[p.type] || 0) - p.days);
+    LEAVES.unshift({id:'LV-' + (320 + LEAVES.length), emp:e.id, type:p.type, from:p.from, to:p.to, days:p.days, status:'Approved'});
+    if (p.from <= ISO(TODAY) && p.to >= ISO(TODAY)) e.status = 'On Leave'; },
+  'Transfer, promotion or salary change': r => { const e = emp(r.payload.emp), p = r.payload;
+    e.movements.unshift({date:p.eff, kind:p.kind, prev:`${e.title}, ${e.branch}, ${UGX(e.basic)}`, next:`${p.title}, ${p.branch}, ${UGX(p.salary)}`, reason:p.reason});
+    Object.assign(e, {title:p.title, branch:p.branch, dept:p.dept, basic:+p.salary, grade:p.grade}); },
+  'Contract renewal': r => { const e = emp(r.payload.emp); e.cEnd = r.payload.newEnd; e.movements.unshift({date:ISO(TODAY), kind:'Contract renewal', prev:'Ends ' + D(r.payload.oldEnd), next:'Ends ' + D(r.payload.newEnd), reason:r.payload.reason}); },
+  'Probation confirmation': r => { const e = emp(r.payload.emp); e.type = 'Permanent'; e.movements.unshift({date:r.payload.eff, kind:'Confirmed in service', prev:'Probationary', next:'Permanent', reason:r.payload.reason}); e.pEnd = null; },
+  'New employee': r => { EMP.push(r.payload.e); },
+  'Personal details change': r => { const e = emp(r.payload.emp); e[r.payload.field] = r.payload.value; },
+  'Monthly payroll': r => { PAY.status = 'Approved'; },
+  'Disciplinary decision': r => { const k = CASES.find(c => c.id === r.payload.case); k.decision = r.payload.decision; k.stage = 'Closed'; k.due = null;
+    const e = emp(k.emp); e.docs['Disciplinary letters'] = 1;
+    if (/Suspension/.test(k.decision)) e.status = 'Suspended';
+    if (/Dismissal/.test(k.decision)) { e.status = 'Terminated'; EXITS.unshift({id:'EX-' + (8 + EXITS.length), emp:e.id, type:'Dismissal', notice:ISO(TODAY), lwd:ISO(TODAY), reason:k.category, interview:'', status:'Clearance in progress', clear:clearList()}); } },
+  'Grievance resolution': r => { const k = CASES.find(c => c.id === r.payload.case); k.decision = r.payload.decision; k.stage = 'Closed'; k.due = null; },
+  'Resignation': r => { const p = r.payload; EXITS.unshift({id:'EX-' + (8 + EXITS.length), emp:p.emp, type:'Resignation', notice:ISO(TODAY), lwd:p.lwd, reason:p.reason, interview:'', status:'Clearance in progress', clear:clearList()}); },
+  'Gratuity or leave pay': r => { PAY.inputs.push({emp:r.payload.emp, kind:r.payload.kind, amt:r.payload.amt, note:r.payload.note}); },
+  'Training request': r => { const p = r.payload; TRAININGS.unshift({id:'TR-' + (22 + TRAININGS.length), title:p.title, provider:p.provider, date:p.date, mandatory:false, status:'Approved', audience:nm(emp(p.emp)), done:[]}); },
+  'Attendance correction': r => { ATT[r.payload.emp] = [r.payload.time, null, 'Manual (approved correction)']; },
+  'HR Library document': r => { LIBRARY.unshift({id:'DOC-' + (11 + LIBRARY.length), title:r.payload.title, ver:r.payload.ver, cat:r.payload.cat, owner:'HR & Admin', approved:ISO(TODAY), ack:0}); }
+};
+const clearList = () => ({'Handover notes submitted':0,'Laptop, keys and ID card returned':0,'Core banking user disabled':0,'PlusPay user disabled':0,'Email account closed':0,'Staff loan balance settled':0,'Final dues computed':0,'Exit interview done':0,'Certificate of service issued':0});
+
+/* seeds */
+(function seed() {
+  const s = (o, hist) => { const r = newReq(o); if (hist) hist(r); return r; };
+  s({type:'Leave application', subject:'Annual leave, 3 to 7 Nov (5 days)', maker:'PSF-0056', at:'2026-10-28T06:14:00.000Z', note:'Family function in Lira.',
+     fields:[['Leave type','Annual'],['Dates','03 Nov 2026 to 07 Nov 2026'],['Working days','5'],['Balance before',`${emp('PSF-0056').bal.Annual} days`],['Reliever','Patience Akello'],['Attachment','None needed']],
+     payload:{emp:'PSF-0056', type:'Annual', from:'2026-11-03', to:'2026-11-07', days:5}});
+  s({type:'Personal details change', subject:'New phone number', maker:'PSF-0117', at:'2026-10-27T11:40:00.000Z', note:'Lost my old line.',
+     fields:[['Field','Phone'],['Current value',emp('PSF-0117').phone],['New value','0759 214 880'],['Supporting document','Telecom SIM replacement form.pdf']],
+     payload:{emp:'PSF-0117', field:'phone', value:'0759 214 880'}});
+  s({type:'Leave application', subject:'Compassionate leave, 30 to 31 Oct (2 days)', maker:'PSF-0142', at:'2026-10-26T07:05:00.000Z', note:'Burial of my uncle in Masaka.',
+     fields:[['Leave type','Other (compassionate)'],['Dates','30 Oct 2026 to 31 Oct 2026'],['Working days','2'],['Reliever','Juliet Nakimuli'],['Attachment','None']],
+     payload:{emp:'PSF-0142', type:'Other', from:'2026-10-30', to:'2026-10-31', days:2}},
+     r => { r.status = 'returned'; r.hist.push({by:'PSF-0007', act:'Returned to maker by HR', at:'2026-10-26T09:30:00.000Z', c:'Please attach the burial notice or a letter from the LC1 chairperson, then resubmit.', k:'w'}); });
+  s({type:'Transfer, promotion or salary change', subject:'Brian Tumusiime: Teller to Senior Teller, Old Taxi Park', maker:'PSF-0007', at:'2026-10-27T08:00:00.000Z', note:'Fills the Senior Teller gap at Old Taxi Park. Note: the August written warning is valid until Feb 2027.',
+     fields:[['Change type','Promotion and transfer'],['Previous position','Teller, Kikuubo, Grade G5'],['New position','Senior Teller, Old Taxi Park, Grade G4'],['Previous salary',UGX(1100000)],['New salary',UGX(1450000)],['Effective date','01 Nov 2026'],['Reason','Replacement for resigned teller; strong H1 targets']],
+     payload:{emp:'PSF-0102', kind:'Promotion and transfer', title:'Senior Teller', branch:BRANCHES[1], dept:'Operations', salary:1450000, grade:'G4', eff:'2026-11-01', reason:'Replacement for resigned teller'}});
+  s({type:'Contract renewal', subject:'Ivan Ssekandi: renew 2 years', maker:'PSF-0007', at:'2026-10-28T13:20:00.000Z', note:'Core banking integration work continues into 2027.',
+     fields:[['Employee','Ivan Ssekandi, ICT Officer'],['Current contract ends','15 Dec 2026'],['Proposed new end date','15 Dec 2028'],['Salary','No change'],['Last appraisal','4.1 / 5']],
+     payload:{emp:'PSF-0034', oldEnd:'2026-12-15', newEnd:'2028-12-15', reason:'Renewed for core banking integration'}});
+  s({type:'Leave application', subject:'Annual leave, 23 to 27 Nov (5 days)', maker:'PSF-0007', at:'2026-10-28T15:02:00.000Z', note:'Staff requests that arrive while I am away will be routed to the MD as acting HR checker.',
+     fields:[['Leave type','Annual'],['Dates','23 Nov 2026 to 27 Nov 2026'],['Working days','5'],['Routing','HR is the maker, so it goes straight to the MD']],
+     payload:{emp:'PSF-0007', type:'Annual', from:'2026-11-23', to:'2026-11-27', days:5}});
+  s({type:'Leave application', subject:'Sick leave, 12 to 13 Oct (2 days)', maker:'PSF-0048', at:'2026-10-12T05:50:00.000Z', note:'Malaria. Medical form attached.',
+     fields:[['Leave type','Sick'],['Dates','12 Oct 2026 to 13 Oct 2026'],['Working days','2'],['Attachment','Medical form.pdf']], payload:{emp:'PSF-0048', type:'Sick', from:'2026-10-12', to:'2026-10-13', days:2}},
+     r => { r.hist.push({by:'PSF-0007', act:'Verified by HR, forwarded to MD', at:'2026-10-12T07:10:00.000Z', c:'Form checked.'}); r.hist.push({by:'PSF-0001', act:'Approved by MD', at:'2026-10-12T09:45:00.000Z', c:'Get well soon.'}); r.stage = 1; r.status = 'approved'; });
+  s({type:'Training request', subject:'Defensive driving course', maker:'PSF-0153', at:'2026-10-05T08:00:00.000Z', note:'To support deliveries to branches.',
+     fields:[['Course','Defensive driving'],['Provider','External driving school'],['Cost',UGX(650000)]], payload:{emp:'PSF-0153', title:'Defensive driving', provider:'Driving school', date:'2026-11-15'}},
+     r => { r.hist.push({by:'PSF-0007', act:'Verified by HR, forwarded to MD', at:'2026-10-06T07:00:00.000Z', c:'Useful, but not budgeted.'}); r.hist.push({by:'PSF-0001', act:'Rejected by MD', at:'2026-10-07T12:00:00.000Z', c:'Not in the 2026 budget. Re-apply in Q1 2027.', k:'r'}); r.stage = 1; r.status = 'rejected'; });
+  AUDIT.push(
+    {at:'2026-10-28T15:02:00.000Z', by:'PSF-0007', role:'hr', action:'Submitted', ref:'R-1036', detail:'Leave application: own annual leave'},
+    {at:'2026-10-28T13:20:00.000Z', by:'PSF-0007', role:'hr', action:'Submitted', ref:'R-1035', detail:'Contract renewal: Ivan Ssekandi'},
+    {at:'2026-10-28T06:14:00.000Z', by:'PSF-0056', role:'staff', action:'Submitted', ref:'R-1031', detail:'Leave application: annual leave'},
+    {at:'2026-10-27T09:12:00.000Z', by:'PSF-0007', role:'hr', action:'Edited employee file', ref:'PSF-0160', detail:'Next of kin phone updated'},
+    {at:'2026-10-26T09:30:00.000Z', by:'PSF-0007', role:'hr', action:'Returned', ref:'R-1033', detail:'Missing burial notice'},
+    {at:'2026-10-10T16:40:00.000Z', by:'PSF-0001', role:'md', action:'Approved', ref:'EX-07', detail:'Final dues for Rose Kyomuhendo'},
+    {at:'2026-10-02T10:05:00.000Z', by:'PSF-0001', role:'md', action:'Approved', ref:'PAY-2026-09', detail:'September payroll posted to core banking'});
+  AUDIT.sort((a, b) => b.at.localeCompare(a.at));
+  NOTES.push({to:'hr', text:'Probation for Esther Nansubuga ends 12 Nov. Raise a confirmation or extension.', at:'2026-10-29T05:00:00.000Z', read:false},
+             {to:'hr', text:'Contract for Collins Wanyama ends 28 Nov (30 days).', at:'2026-10-29T05:00:00.000Z', read:false},
+             {to:'md', text:'October payroll not yet submitted by HR. Cut-off is 25th of each month.', at:'2026-10-29T05:00:00.000Z', read:false},
+             {to:'PSF-0142', text:'R-1033 was returned: attach burial notice or LC1 letter.', at:'2026-10-26T09:30:00.000Z', read:false},
+             {to:'PSF-0142', text:'AML/CFT refresher on 20 Nov is mandatory for all staff.', at:'2026-10-25T09:30:00.000Z', read:true});
+})();
+
+/* ================= SHELL, NAV, OVERLAYS, FORMS ================= */
+const ICON = {
+  home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', inbox:'M3 13h5l2 3h4l2-3h5M5 5h14l2 8v6H3v-6z',
+  users:'M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8',
+  user:'M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10', clock:'M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18',
+  cal:'M8 3v4M16 3v4M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z', star:'M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z',
+  flag:'M5 21V4M5 4h11l-2 4 2 4H5', book:'M4 19V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2M20 19v2H6', cap:'M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5',
+  brief:'M3 8h18v12H3zM8 8V5h8v3M3 13h18', swap:'M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7', cash:'M2 6h20v12H2zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M6 9v.01M18 15v.01',
+  gift:'M4 11h16v10H4zM2 7h20v4H2zM12 7v14M12 7s-2-4-5-4-3 4 0 4M12 7s2-4 5-4 3 4 0 4', sliders:'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4',
+  gavel:'M14 4l6 6M4 20l7-7M10 8l6 6M12 6l6 6-2 2-6-6z', door:'M14 3H5v18h9M14 3l6 2v14l-6 2zM11 12h.01', chart:'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  shield:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z', flow:'M6 3v12M6 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6M18 9c0 6-12 3-12 6',
+  plug:'M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4', list:'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', img:'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6M15 9h.01',
+  plus:'M12 5v14M5 12h14', x:'M6 6l12 12M18 6 6 18', file:'M14 3H6v18h12V7zM14 3v4h4'
+};
+const ic = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${ICON[k]}"/></svg>`;
+const NAV = {
+  hr:[['Overview',[['dashboard','Dashboard','home'],['approvals','Approvals','inbox']]],
+      ['People',[['employees','Employees','users'],['attendance','Attendance','clock'],['leave','Leave management','cal']]],
+      ['Talent',[['performance','Performance','star'],['probation','Probation and contracts','flag'],['training','Training and development','cap'],['recruitment','Recruitment','brief'],['movements','Transfers, promotions, salary','swap']]],
+      ['Pay',[['payroll','Payroll','cash'],['gratuity','Gratuity and leave pay','gift'],['paysetup','Payroll setup','sliders']]],
+      ['Relations',[['cases','Disciplinary and grievance','gavel'],['exits','Exit management','door']]],
+      ['Resources',[['library','HR library','book'],['reports','HR reports','chart']]],
+      ['Administration',[['roles','Roles and permissions','shield'],['workflow','Approval workflow','flow'],['systems','Connected systems','plug'],['audit','Audit trail','list'],['brand','Logos and branding','img']]]],
+  staff:[['My workspace',[['home','My dashboard','home'],['myprofile','My employee file','user'],['myleave','Apply for leave','cal'],['myrequests','My requests','inbox']]],
+         ['Pay and time',[['payslips','My payslips','cash'],['myattendance','My attendance','clock']]],
+         ['Growth and support',[['mytraining','My trainings','cap'],['grievance','Raise a grievance','gavel'],['library','HR library','book'],['resign','Resignation','door']]]]
+};
+NAV.md = JSON.parse(JSON.stringify(NAV.hr)).map(([g, items]) => [g, items.filter(i => !['brand','workflow','paysetup'].includes(i[0]))]).filter(g => g[1].length);
+
+const S = {role:'hr', view:'dashboard', param:null, q:'', tab:{}, logos:{ps:null, pp:null}, form:null};
+const VIEWS = {};
+const A = {}; /* actions by data-act */
+
+function go(view, param = null) { S.view = view; S.param = param; render(); $('#side').classList.remove('open'); $('#view').scrollTop = 0; }
+function render() {
+  renderSide(); renderTop();
+  const v = VIEWS[S.view] || VIEWS[S.role === 'staff' ? 'home' : 'dashboard'];
+  $('#view').innerHTML = v(S.param);
+  if (S.after) { const f = S.after; S.after = null; f(); }
+}
+function renderSide() {
+  const count = awaiting().length;
+  $('#side').innerHTML = `<div class="side-brand"><div><div class="t">PlusSave HR</div><div class="s">People system</div></div></div>` +
+    NAV[S.role].map(([g, items]) => `<nav class="nav-group" aria-label="${esc(g)}"><h4>${esc(g)}</h4>${items.map(([k, l, i]) =>
+      `<button class="nav-item ${S.view === k || (k === 'employees' && S.view === 'profile' && S.role !== 'staff') ? 'on' : ''}" data-go="${k}">${ic(i)}<span>${esc(l)}</span>${k === 'approvals' && count ? `<span class="badge">${count}</span>` : ''}${k === 'myrequests' && REQS.some(r => r.maker === USERS.staff.emp && r.status === 'returned') ? '<span class="badge">!</span>' : ''}</button>`).join('')}</nav>`).join('');
+}
+function myNotes() { const u = USERS[S.role]; return NOTES.filter(n => n.to === S.role || n.to === u.emp); }
+function renderTop() {
+  document.querySelectorAll('#roleseg button').forEach(b => b.classList.toggle('on', b.dataset.role === S.role));
+  const e = me(); $('#me').innerHTML = `${av(e)}<div class="txt"><div class="n">${esc(nm(e))}</div><div class="r">${esc(e.title)}</div></div>`;
+  const un = myNotes().filter(n => !n.read).length; const d = $('#belldot'); d.hidden = !un; d.textContent = un;
+}
+function psMark(s = 38, onDark = false) {
+  return `<svg width="${s}" height="${s}" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="${onDark ? '#ffffff' : 'var(--brand)'}"/><path d="M20 11v18M11 20h18" stroke="${onDark ? '#0b5a3a' : 'var(--brand-ink)'}" stroke-width="5" stroke-linecap="round"/><circle cx="31" cy="9" r="4" fill="var(--accent)"/></svg>`;
+}
+function ppMark(s = 38) {
+  return `<svg width="${s}" height="${s}" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="20" fill="var(--brand-strong)"/><path d="M14 29V11h7a6 6 0 0 1 0 12h-7" fill="none" stroke="var(--surface)" stroke-width="4" stroke-linejoin="round"/><path d="M27 25v8M23 29h8" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/></svg>`;
+}
+function logos() {
+  return S.logos.ps ? `<div class="logos"><div class="logo"><img src="${S.logos.ps}" alt="PlusSave Financial Solutions"></div></div>` :
+    `<div class="logos"><div class="logo" title="Placeholder: upload the official logo under Logos and branding"><div class="wm"><b>PlusSave</b><small>Financial Solutions</small></div></div></div>`;
+}
+function page({crumb, title, sub, actions = '', body}) {
+  return `<div class="wrap"><div class="brandstrip">${logos()}<div class="strip-meta"><span>Human Resource Management System</span><span class="chip">Thu, 29 Oct 2026</span><span class="chip">Sample data</span></div></div>
+  <div class="pagehead"><div style="min-width:0"><div class="crumbs">${esc(crumb)}</div><h1>${esc(title)}</h1>${sub ? `<p>${sub}</p>` : ''}</div><div class="actions">${actions}</div></div>${body}</div>`;
+}
+const card = (title, body, sub = '') => `<section class="card"><h3>${esc(title)}${sub ? `<span class="sub">${sub}</span>` : ''}</h3>${body}</section>`;
+function table(cols, rows, {click, foot, empty = 'Nothing to show yet.'} = {}) {
+  if (!rows.length) return `<div class="tw"><div class="empty">${empty}</div></div>`;
+  return `<div class="tw"><table><thead><tr>${cols.map(c => `<th class="${c.r ? 'r' : ''}">${esc(c.h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r =>
+    `<tr ${click ? `class="click" ${click(r)}` : ''}>${cols.map(c => `<td class="${c.r ? 'r num' : ''}">${c.f(r)}</td>`).join('')}</tr>`).join('')}</tbody>${foot ? `<tfoot><tr>${foot}</tr></tfoot>` : ''}</table></div>`;
+}
+function bars(pairs) {
+  const max = Math.max(1, ...pairs.map(p => p[1]));
+  return `<div class="bars">${pairs.map(([l, v, go]) => `<div class="bar-row" title="${esc(l)}: ${v}" ${go ? `data-go="employees" data-filter="${esc(go)}" style="cursor:pointer"` : ''}><span class="lb">${esc(l)}</span><span class="bar-track"><span class="bar-fill" style="width:${v / max * 100}%"></span></span><span class="vv">${v}</span></div>`).join('')}</div>`;
+}
+const tabs = (key, list) => { const cur = S.tab[key] || list[0][0]; return `<div class="tabs" role="tablist">${list.map(([k, l]) => `<button class="${cur === k ? 'on' : ''}" data-tab="${key}" data-v="${k}">${esc(l)}</button>`).join('')}</div>`; };
+const curTab = (key, def) => S.tab[key] || def;
+
+/* overlays */
+function openDrawer(html) { $('#drawer').innerHTML = html; $('#drawerScrim').hidden = false; }
+function closeDrawer() { $('#drawerScrim').hidden = true; }
+function openModal(html) { $('#modal').innerHTML = html; $('#modalScrim').hidden = false; }
+function closeModal() { $('#modalScrim').hidden = true; S.form = null; }
+const ovHead = (t, sub = '', closer = 'closeDrawer') => `<div class="ov-head"><div><h2>${esc(t)}</h2>${sub ? `<div class="muted" style="font-size:12.5px">${sub}</div>` : ''}</div><button class="iconbtn" data-act="${closer}" aria-label="Close">${ic('x').replace('<svg', '<svg width="16" height="16"')}</button></div>`;
+
+/* forms: fields = [{id,label,type,opts,val,req,full,hint,ro,sec}] */
+function fieldHtml(f) {
+  if (f.sec) return `<div class="sec-title">${esc(f.sec)}</div>`;
+  if (f.type === 'calc') return `<div class="calc" id="calc">${f.val || ''}</div>`;
+  const id = 'f_' + f.id, req = f.req ? ' required' : '', ro = f.ro ? ' readonly' : '';
+  let input;
+  if (f.type === 'select') input = `<select id="${id}"${req}>${(f.opts || []).map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(v) === String(f.val ?? '') ? 'selected' : ''}>${esc(l)}</option>`; }).join('')}</select>`;
+  else if (f.type === 'textarea') input = `<textarea id="${id}"${req}${ro}>${esc(f.val || '')}</textarea>`;
+  else if (f.type === 'file') input = `<input type="file" id="${id}" ${f.multiple ? 'multiple' : ''} accept="${f.accept || ''}">`;
+  else input = `<input type="${f.type || 'text'}" id="${id}" value="${esc(f.val ?? '')}"${req}${ro} ${f.min != null ? `min="${f.min}"` : ''}>`;
+  return `<div class="field ${f.full ? 'full' : ''}"><label for="${id}">${esc(f.label)}${f.req ? ' <span class="req">*</span>' : ''}</label>${input}${f.hint ? `<span class="hint">${f.hint}</span>` : ''}</div>`;
+}
+function formModal({title, sub = '', fields, submit = 'Submit for approval', onSubmit, onInput, flow}) {
+  S.form = {fields, onSubmit, onInput};
+  openModal(`${ovHead(title, sub, 'closeModal')}<form id="theform" novalidate><div class="ov-body">${flow ? flowHtml(flow, 0) : ''}<div class="form">${fields.map(fieldHtml).join('')}</div></div>
+  <div class="ov-foot"><button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" class="btn primary">${esc(submit)}</button></div></form>`);
+  if (onInput) onInput(readForm());
+}
+function readForm() {
+  const v = {}; (S.form?.fields || []).forEach(f => { if (!f.id) return; const el = document.getElementById('f_' + f.id); if (!el) return;
+    v[f.id] = f.type === 'file' ? [...el.files].map(x => x.name).join(', ') : f.type === 'number' ? (el.value === '' ? '' : +el.value) : el.value; });
+  return v;
+}
+function formError(msg) { let n = document.getElementById('formerr'); if (!n) { n = document.createElement('div'); n.id = 'formerr'; n.className = 'note crit'; document.querySelector('#theform .ov-body').prepend(n); } n.innerHTML = `<b>Fix before submitting:</b> ${esc(msg)}`; n.scrollIntoView({block:'nearest'}); }
+
+/* maker-checker visuals */
+function flowHtml(r, _) {
+  const chain = Array.isArray(r) ? r : null;
+  const steps = chain ? chain : ['maker', ...r.chain];
+  const labels = {maker:'Maker', staff:'Staff', hr:'HR review', md:'MD approval'};
+  return `<div class="flow" style="--n:${steps.length + (chain ? 0 : 1)}">${steps.map((s, i) => {
+    let cls = '', sub = '';
+    if (!chain) {
+      if (i === 0) { cls = 'done'; sub = nm(emp(r.maker)); }
+      else { const si = i - 1;
+        if (r.status === 'approved' || si < r.stage) cls = 'done';
+        else if (si === r.stage && r.status === 'pending') { cls = 'cur'; sub = 'Waiting'; }
+        else if (si === r.stage && r.status === 'rejected') { cls = 'bad'; sub = 'Rejected'; }
+        else if (si === r.stage && r.status === 'returned') { cls = 'bad'; sub = 'Returned'; } }
+    } else if (i === 0) cls = 'cur';
+    return `<div class="step ${cls}"><div class="dotc">${cls === 'done' ? '✓' : i + 1}</div><div class="sl">${chain && i === 0 ? ROLE_NAME[s] + ' (maker)' : labels[s] || s}</div><div class="ss">${esc(sub)}</div></div>`;
+  }).join('')}${chain ? '' : `<div class="step ${r.status === 'approved' ? 'done' : ''}"><div class="dotc">${r.status === 'approved' ? '✓' : steps.length + 1}</div><div class="sl">Applied</div><div class="ss">${r.status === 'approved' ? 'Record updated' : ''}</div></div>`}</div>`;
+}
+function reqDrawer(id) {
+  const r = REQS.find(x => x.id === id); if (!r) return;
+  const mine = isMine(r), can = canAct(r);
+  let actions = '';
+  if (can) actions = `<div class="field"><label for="actc">Comment ${S.role === 'hr' ? '(required to return or reject)' : '(required to return or reject)'}</label><textarea id="actc" placeholder="${S.role === 'hr' ? 'What did you verify? e.g. balance checked, reliever confirmed' : 'Approval note'}"></textarea></div>
+    <div class="actions">${S.role === 'hr' && r.chain[r.stage] === 'hr' && r.stage < r.chain.length - 1 ? `<button class="btn primary" data-act="req" data-a="forward" data-id="${r.id}">Verify and forward to MD</button>` : `<button class="btn ok" data-act="req" data-a="approve" data-id="${r.id}">Approve</button>`}
+    <button class="btn warn" data-act="req" data-a="return" data-id="${r.id}">Return for correction</button><button class="btn danger" data-act="req" data-a="reject" data-id="${r.id}">Reject</button></div>`;
+  else if (stageRole(r) === S.role && mine) actions = `<div class="note warn"><b>Segregation of duties.</b> You created this request, so you cannot approve it. It has been routed to the next checker.</div>`;
+  else if (r.status === 'returned' && mine) actions = `<div class="field"><label for="actc">What did you correct?</label><textarea id="actc" placeholder="e.g. Burial notice attached"></textarea></div><div class="field"><label for="actf">Attach document</label><input type="file" id="actf"></div><div class="actions"><button class="btn primary" data-act="resubmit" data-id="${r.id}">Resubmit</button></div>`;
+  openDrawer(`${ovHead(r.type, `${r.id} · raised ${DT(r.created)}`)}<div class="ov-body">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${reqStatus(r)} ${sla(r)} <span class="chip">Maker: ${esc(nm(emp(r.maker)))} (${ROLE_NAME[r.makerRole]})</span></div>
+    ${flowHtml(r)}
+    <section class="card"><h3>${esc(r.subject)}</h3><dl class="kv">${r.fields.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></section>
+    <section><h3 style="font-size:14px;margin-bottom:10px">Approval history</h3><div class="hist">${r.hist.map(h => `<div class="h ${h.k || ''}"><div class="w1">${esc(h.act)}</div><div class="muted">${esc(nm(emp(h.by)))} · ${DT(h.at)}</div>${h.c ? `<div class="c">${esc(h.c)}</div>` : ''}</div>`).join('')}</div></section>
+    ${actions}</div>`);
+}
+A.req = el => { const r = REQS.find(x => x.id === el.dataset.id); const ok = act(r, el.dataset.a, $('#actc').value || ''); if (ok) { closeDrawer(); render(); toast({forward:'Verified and sent to the MD', approve:'Approved. Records updated.', return:'Returned with your comment', reject:'Rejected. The maker has been notified.'}[el.dataset.a]); } };
+A.resubmit = el => { const r = REQS.find(x => x.id === el.dataset.id); resubmit(r, $('#actc').value || ''); closeDrawer(); render(); toast('Resubmitted to HR'); };
+A.closeDrawer = () => closeDrawer();
+A.closeModal = () => closeModal();
+A.open = el => reqDrawer(el.dataset.id);
+
+/* notifications */
+A.bell = () => { const list = myNotes(); openDrawer(`${ovHead('Notifications', 'Also sent by email and SMS')}<div class="ov-body"><div class="list">${list.length ? list.map(n => `<div class="li"><span class="pill ${n.read ? 'plain' : 'gold'}">${n.read ? 'Read' : 'New'}</span><div class="grow"><div class="t" style="font-weight:500">${esc(n.text)}</div><div class="s">${DT(n.at)}</div></div></div>`).join('') : '<div class="empty">No notifications.</div>'}</div></div>`); list.forEach(n => n.read = true); renderTop(); };
+
+/* global events */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-go],[data-act],[data-tab],[data-role]');
+  if (!t) { if (e.target.id === 'drawerScrim') closeDrawer(); if (e.target.id === 'modalScrim') closeModal(); return; }
+  if (t.dataset.role) { S.role = t.dataset.role; S.view = S.role === 'staff' ? 'home' : 'dashboard'; S.param = null; render(); toast(`Now viewing as ${USERS[S.role].label}: ${nm(me())}`); return; }
+  if (t.dataset.tab) { S.tab[t.dataset.tab] = t.dataset.v; render(); return; }
+  if (t.dataset.go) { if (t.dataset.filter) S.filter = t.dataset.filter; closeDrawer(); go(t.dataset.go, t.dataset.p || null); return; }
+  if (t.dataset.act && A[t.dataset.act]) A[t.dataset.act](t, e);
+});
+document.addEventListener('submit', e => { if (e.target.id !== 'theform') return; e.preventDefault(); const v = readForm(); const r = S.form.onSubmit(v); if (r !== false) { closeModal(); render(); } });
+document.addEventListener('input', e => { if (S.form && S.form.onInput && e.target.closest('#theform')) S.form.onInput(readForm()); });
+document.addEventListener('change', e => { if (S.form && S.form.onInput && e.target.closest('#theform')) S.form.onInput(readForm()); if (e.target.dataset.change && A[e.target.dataset.change]) A[e.target.dataset.change](e.target); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); closeModal(); } });
+
+/* ================= DASHBOARD ================= */
+function metrics() {
+  const act = activeEmp(), t = ISO(TODAY);
+  const onLeave = act.filter(e => e.status === 'On Leave');
+  const absent = act.filter(e => !ATT[e.id] && e.status === 'Active');
+  const late = act.filter(e => ATT[e.id] && ATT[e.id][0] > SHIFT_START);
+  const contracts = act.filter(e => e.cEnd && fromToday(e.cEnd) <= 90).sort((a, b) => a.cEnd.localeCompare(b.cEnd));
+  const probation = act.filter(e => e.type === 'Probationary' && e.pEnd && fromToday(e.pEnd) <= 45).sort((a, b) => a.pEnd.localeCompare(b.pEnd));
+  const appraisal = APPRAISALS.filter(a => a.status !== 'Completed' && fromToday(a.due) <= 30).sort((a, b) => a.due.localeCompare(b.due));
+  const newStaff = act.filter(e => days(e.joined, t) <= 90);
+  const exits = EXITS.filter(x => days(x.lwd || x.notice, t) <= 90);
+  const trainDue = TRAININGS.filter(x => x.status === 'Scheduled' && fromToday(x.date) <= 30 && fromToday(x.date) >= 0);
+  const cases = CASES.filter(c => c.stage !== 'Closed');
+  return {act, onLeave, absent, late, contracts, probation, appraisal, newStaff, exits, trainDue, cases};
+}
+const countBy = (arr, k, keys) => (keys || [...new Set(arr.map(e => e[k]))]).map(v => [v, arr.filter(e => e[k] === v).length]);
+VIEWS.dashboard = () => {
+  const m = metrics(), reg = payRegister(), pend = awaiting();
+  const kpi = (l, v, d, go, cls = '') => `<button class="kpi ${cls}" data-go="${go}"><span class="l">${l}</span><span class="v">${v}</span><span class="d">${d}</span></button>`;
+  const upcoming = LEAVES.filter(l => l.status === 'Approved' && l.to >= ISO(TODAY)).sort((a, b) => a.from.localeCompare(b.from));
+  const body = `
+  ${S.role === 'md' && pend.length ? `<div class="note warn"><b>${pend.length} item${pend.length > 1 ? 's' : ''} waiting for your approval.</b> HR has verified them. <button class="linkbtn" data-go="approvals">Open approvals</button></div>` : ''}
+  <div class="kpis">
+    ${kpi('Employee count', m.act.length, `${m.act.filter(e => e.status === 'Active').length} active, ${m.onLeave.length} on leave`, 'employees')}
+    ${kpi('Waiting for me', pend.length, S.role === 'hr' ? 'Staff requests to verify' : 'Verified by HR', 'approvals', pend.length ? 'alert' : '')}
+    ${kpi('Staff absent today', m.absent.length, `${m.late.length} late after ${SHIFT_START}`, 'attendance', m.absent.length ? 'alert' : '')}
+    ${kpi('Contracts expiring', m.contracts.length, 'Next 90 days', 'probation', m.contracts.some(e => fromToday(e.cEnd) <= 30) ? 'critical' : 'alert')}
+    ${kpi('Probation ending', m.probation.length, 'Next 45 days', 'probation', m.probation.length ? 'alert' : '')}
+    ${kpi('Due for appraisal', m.appraisal.length, 'Next 30 days', 'performance')}
+    ${kpi('Vacant positions', VACANCIES.length, `${VACANCIES.reduce((s, v) => s + v.applicants, 0)} applicants`, 'recruitment')}
+    ${kpi('Trainings due', m.trainDue.length, 'Next 30 days', 'training')}
+    ${kpi('Cases due action', m.cases.length, 'Disciplinary and grievance', 'cases', m.cases.length ? 'alert' : '')}
+    ${kpi('October payroll', 'UGX ' + (reg.tot.gross / 1e6).toFixed(1) + 'M', `${reg.lines.length} staff · ${PAY.status}`, 'payroll')}
+  </div>
+  <div class="grid g3">
+    ${card('Employees per branch', bars(countBy(m.act, 'branch', BRANCHES).map(([k, v]) => [k, v, 'branch:' + k])), 'Tap a bar to filter')}
+    ${card('Employees per department', bars(countBy(m.act, 'dept', DEPTS).filter(x => x[1]).map(([k, v]) => [k, v, 'dept:' + k])))}
+    ${card('Employment type', bars(countBy(m.act, 'type', TYPES).map(([k, v]) => [k, v, 'type:' + k])), 'Permanent, contract, probationary, part-time, intern')}
+  </div>
+  <div class="grid g3">
+    ${card('Leave tracker', `<div class="list">${upcoming.slice(0, 5).map(l => `<div class="li">${av(emp(l.emp))}<div class="grow"><div class="t">${esc(nm(emp(l.emp)))}</div><div class="s">${l.type} · ${D(l.from)} to ${D(l.to)}</div></div>${l.from <= ISO(TODAY) ? pill('On leave', 'info') : pill('In ' + fromToday(l.from) + 'd', 'plain')}</div>`).join('') || '<div class="empty">No one on leave.</div>'}</div>`, `<button class="linkbtn" data-go="leave">All leave</button>`)}
+    ${card('Contract expiry and probation end', `<div class="list">${[...m.contracts.map(e => [e, 'Contract ends', e.cEnd]), ...m.probation.map(e => [e, 'Probation ends', e.pEnd])].sort((a, b) => a[2].localeCompare(b[2])).map(([e, l, d]) => { const n = fromToday(d); return `<div class="li" data-go="profile" data-p="${e.id}" style="cursor:pointer">${av(e)}<div class="grow"><div class="t">${esc(nm(e))}</div><div class="s">${l} ${D(d)}</div></div>${pill(n + ' days', n <= 30 ? 'crit' : 'warn')}</div>`; }).join('') || '<div class="empty">Nothing due.</div>'}</div>`, 'Alerts at 90, 60 and 30 days')}
+    ${card('Staff due for appraisal', `<div class="list">${m.appraisal.map(a => `<div class="li">${av(emp(a.emp))}<div class="grow"><div class="t">${esc(nm(emp(a.emp)))}</div><div class="s">${a.cycle} · ${a.status}</div></div>${pill(D(a.due), fromToday(a.due) <= 7 ? 'warn' : 'plain')}</div>`).join('')}</div>`)}
+  </div>
+  <div class="grid g3">
+    ${card('Staff absent today', `<div class="list">${m.absent.map(e => `<div class="li">${av(e)}<div class="grow"><div class="t">${esc(nm(e))}</div><div class="s">${esc(e.branch)} · no clock-in, no approved leave</div></div>${pill('Absent', 'crit')}</div>`).join('') || '<div class="empty">Everyone is in.</div>'}${m.late.map(e => `<div class="li">${av(e)}<div class="grow"><div class="t">${esc(nm(e))}</div><div class="s">Clocked in ${ATT[e.id][0]}</div></div>${pill('Late', 'warn')}</div>`).join('')}</div>`)}
+    ${card('New staff and employee exits', `<div class="list">${m.newStaff.map(e => `<div class="li">${av(e)}<div class="grow"><div class="t">${esc(nm(e))}</div><div class="s">${esc(e.title)} · joined ${D(e.joined)}</div></div>${pill('New', 'ok')}</div>`).join('')}${m.exits.map(x => `<div class="li">${av(emp(x.emp))}<div class="grow"><div class="t">${esc(nm(emp(x.emp)))}</div><div class="s">${x.type} · last day ${D(x.lwd)}</div></div>${pill('Exit', '')}</div>`).join('')}</div>`, 'Last 90 days')}
+    ${card('Recruitment: vacant positions', `<div class="list">${VACANCIES.map(v => `<div class="li"><div class="grow"><div class="t">${esc(v.title)}</div><div class="s">${esc(v.branch)} · ${v.applicants} applicants · closes ${D(v.closes)}</div></div>${pill(v.stage, 'info')}</div>`).join('')}</div>`)}
+  </div>
+  <div class="grid g3">
+    ${card('Trainings due', `<div class="list">${m.trainDue.map(t => `<div class="li"><div class="grow"><div class="t">${esc(t.title)}</div><div class="s">${esc(t.audience)} · ${D(t.date)}</div></div>${t.mandatory ? pill('Mandatory', 'warn') : pill('Optional', 'plain')}</div>`).join('') || '<div class="empty">None in the next 30 days.</div>'}</div>`)}
+    ${card('Disciplinary cases due action', `<div class="list">${m.cases.map(c => `<div class="li" data-go="cases" style="cursor:pointer"><div class="grow"><div class="t">${c.id} · ${esc(nm(emp(c.emp)))}</div><div class="s">${esc(c.category)}</div></div>${pill(c.stage + (c.due ? ' · ' + D(c.due) : ''), 'warn')}</div>`).join('')}</div>`)}
+    ${card('Payroll and headcount summary', table([{h:'Period', f:p => p.period}, {h:'Staff', r:1, f:p => p.staff}, {h:'Gross (UGX)', r:1, f:p => N(p.gross)}, {h:'Status', f:p => pill(p.status, p.status === 'Posted' ? 'ok' : 'gold')}],
+       [...PAYROLL_HIST, {period:'2026-10', staff:reg.lines.length, gross:reg.tot.gross, status:PAY.status}].reverse()))}
+  </div>`;
+  return page({crumb:'Overview', title:S.role === 'md' ? 'Managing Director dashboard' : 'HR dashboard', sub:'Headcount, alerts and approvals across Saasa Plaza, Old Taxi Park and Kikuubo.', actions:S.role === 'hr' ? `<button class="btn primary" data-act="addEmp">${ic('plus').replace('<svg', '<svg width="15" height="15"')} Add employee</button><button class="btn" data-go="reports">HR reports</button>` : `<button class="btn primary" data-go="approvals">Review approvals (${pend.length})</button>`, body});
+};
+
+/* ================= APPROVALS ================= */
+VIEWS.approvals = () => {
+  const tab = curTab('appr', 'wait');
+  const ft = S.tab.apprType || '';
+  let rows = tab === 'wait' ? awaiting() : tab === 'mine' ? REQS.filter(r => isMine(r)) : REQS;
+  if (ft) rows = rows.filter(r => r.type === ft);
+  const types = [...new Set(REQS.map(r => r.type))];
+  const body = `<div class="note"><b>How approvals work.</b> Staff requests go Staff → HR (verify) → MD (approve). Requests HR raises go HR → MD. Nobody can approve a request they created. Returned items go back one step with a comment; every action is written to the audit trail.</div>
+  ${tabs('appr', [['wait', `Waiting for me (${awaiting().length})`], ['mine', 'Submitted by me'], ['all', 'All requests']])}
+  <div class="toolbar"><select id="apprType" data-change="apprType" aria-label="Filter by type"><option value="">All request types</option>${types.map(t => `<option ${t === ft ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
+  ${table([{h:'Ref', f:r => `<span class="mono">${r.id}</span>`}, {h:'Request', f:r => `<b>${esc(r.type)}</b><div class="muted" style="font-size:12px">${esc(r.subject)}</div>`},
+    {h:'Maker', f:r => person(emp(r.maker), ROLE_NAME[r.makerRole])}, {h:'Raised', f:r => DT(r.created)}, {h:'Stage', f:r => reqStatus(r)}, {h:'SLA', f:r => sla(r)}],
+    rows, {click:r => `data-act="open" data-id="${r.id}"`, empty:tab === 'wait' ? 'Nothing is waiting for you. New requests will appear here.' : 'No requests yet.'})}`;
+  return page({crumb:'Overview', title:'Approvals', sub:'Maker-checker queue. Open a row to see details, history and actions.', body});
+};
+A.apprType = el => { S.tab.apprType = el.value; render(); };
+
+/* ================= EMPLOYEES ================= */
+VIEWS.employees = () => {
+  const f = S.ef || (S.ef = {branch:'', dept:'', type:'', status:'Current'});
+  if (S.filter) { const [k, v] = S.filter.split(':'); f[k] = v; S.filter = null; }
+  const q = S.q.toLowerCase();
+  const rows = EMP.filter(e => (!f.branch || e.branch === f.branch) && (!f.dept || e.dept === f.dept) && (!f.type || e.type === f.type) &&
+    (f.status === 'All' || (f.status === 'Current' ? !['Resigned','Terminated'].includes(e.status) : e.status === f.status)) &&
+    (!q || [nm(e), e.id, e.title, e.branch, e.dept].join(' ').toLowerCase().includes(q)));
+  const sel = (id, opts, v, all) => `<select data-change="ef" data-k="${id}" aria-label="${id}"><option value="">${all}</option>${opts.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+  const body = `<div class="toolbar">${sel('branch', BRANCHES, f.branch, 'All branches')}${sel('dept', DEPTS, f.dept, 'All departments')}${sel('type', TYPES, f.type, 'All employment types')}
+    <select data-change="ef" data-k="status" aria-label="status">${['Current','All',...STATUSES].map(o => `<option ${o === f.status ? 'selected' : ''}>${o}</option>`).join('')}</select>
+    ${q ? `<span class="chip">Search: “${esc(S.q)}”</span> <button class="linkbtn" data-act="clearq">Clear</button>` : ''}<span class="muted" style="margin-left:auto">${rows.length} employees</span></div>
+  ${table([{h:'Employee', f:e => person(e)}, {h:'ID', f:e => `<span class="mono">${e.id}</span>`}, {h:'Department', f:e => esc(e.dept)}, {h:'Branch', f:e => esc(e.branch)}, {h:'Type', f:e => esc(e.type)}, {h:'Status', f:e => empStatusPill(e.status)}, {h:'Joined', f:e => D(e.joined)}],
+    rows, {click:e => `data-go="profile" data-p="${e.id}"`, empty:'No employees match these filters.'})}`;
+  return page({crumb:'People', title:'Employees', sub:'Every employee file, with job details, documents and history in one place.', actions:S.role === 'hr' ? `<button class="btn primary" data-act="addEmp">Add employee</button>` : '', body});
+};
+A.ef = el => { S.ef[el.dataset.k] = el.value; render(); };
+A.clearq = () => { S.q = ''; $('#q').value = ''; render(); };
+
+/* ================= PROFILE ================= */
+VIEWS.myprofile = () => VIEWS.profile(USERS.staff.emp);
+VIEWS.profile = id => {
+  const e = emp(id) || me(), self = S.role === 'staff', hr = S.role === 'hr';
+  const tab = curTab('prof', 'file');
+  const sup = emp(e.sup);
+  const kv = pairs => `<dl class="kv">${pairs.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl>`;
+  let content = '';
+  if (tab === 'file') content = card('Employee file', kv([['Employee ID', `<span class="mono">${e.id}</span>`], ['Name', esc(nm(e))], ['Gender', e.g === 'F' ? 'Female' : 'Male'], ['Date of birth', `${D(e.dob)} (${age(e)} years)`], ['National ID (NIN)', `<span class="mono">${esc(e.nin)}</span> <span class="faint">masked</span>`], ['Phone', esc(e.phone)], ['Email', esc(e.email)], ['Address', esc(e.addr)], ['Next of kin', `${esc(e.nok.n)} (${esc(e.nok.rel)})`], ['Next of kin contact', esc(e.nok.p)], ['Photograph', e.photo ? 'Uploaded' : `<label class="btn sm" for="photoUp">Upload photo</label><input type="file" id="photoUp" accept="image/*" data-change="photo" data-id="${e.id}" hidden>`]]));
+  if (tab === 'job') content = card('Employee information', kv([['Job title', esc(e.title)], ['Department', esc(e.dept)], ['Branch', esc(e.branch)], ['Supervisor', sup ? esc(nm(sup) + ', ' + sup.title) : 'Board of Directors'], ['Employment type', esc(e.type)], ['Date joined / contract start', D(e.joined)], ['Contract end', e.cEnd ? `${D(e.cEnd)} ${pill(fromToday(e.cEnd) + ' days left', fromToday(e.cEnd) <= 30 ? 'crit' : 'warn')}` : 'Not applicable'], ['Probation', e.pStart ? `${D(e.pStart)} to ${D(e.pEnd)}` : 'Completed or not applicable'], ['Grade', `${e.grade} · ${GRADES[e.grade].name}`], ['Basic salary', UGX(e.basic)], ['Allowances', (() => { const a = allw(e); return `Transport ${N(a.tr)} · Housing ${N(a.hs)} · Airtime ${N(a.at)}`; })()], ['Salary account (core banking)', `<span class="mono">${e.acct}</span>`], ['Status', empStatusPill(e.status) + ' <span class="faint">Active, On Leave, Suspended, Resigned, Terminated</span>']]));
+  if (tab === 'docs') content = card('Documents', `<div class="list">${Object.entries(e.docs).map(([k, v]) => `<div class="li">${ic('file').replace('<svg', '<svg width="18" height="18"')}<div class="grow"><div class="t">${esc(k)}</div><div class="s">${v ? 'PDF on file · uploaded by HR' : 'Not uploaded'}</div></div>${v ? pill('On file', 'ok') : pill('Missing', k === 'Disciplinary letters' || k === 'Exit documents' ? 'plain' : 'warn')}${hr || self ? `<label class="btn sm" for="up_${k.replace(/\W/g, '')}">${v ? 'Replace' : 'Upload'}</label><input type="file" id="up_${k.replace(/\W/g, '')}" hidden data-change="docUp" data-id="${e.id}" data-k="${esc(k)}">` : ''}</div>`).join('')}</div>`, 'CV, academic documents, appointment letter, contract, NDA, JD, appraisals, disciplinary and exit documents');
+  if (tab === 'leave') content = `<div class="kpis">${Object.entries(LEAVE_TYPES).map(([k, v]) => `<div class="kpi" style="cursor:default"><span class="l">${k}</span><span class="v">${e.bal[k] ?? v.days}</span><span class="d">of ${v.days} days</span></div>`).filter((_, i) => !(['Maternity'].includes(Object.keys(LEAVE_TYPES)[i]) && e.g === 'M') && !(['Paternity'].includes(Object.keys(LEAVE_TYPES)[i]) && e.g === 'F')).join('')}</div>` +
+    table([{h:'Ref', f:l => l.id}, {h:'Type', f:l => l.type}, {h:'From', f:l => D(l.from)}, {h:'To', f:l => D(l.to)}, {h:'Days', r:1, f:l => l.days}, {h:'Status', f:l => pill(l.status, 'ok')}], LEAVES.filter(l => l.emp === e.id), {empty:'No leave taken this year.'});
+  if (tab === 'att') { const a = ATT[e.id]; content = card('Attendance', kv([['Today', a ? `In ${a[0]} · ${esc(a[2])} ${a[0] > SHIFT_START ? pill('Late', 'warn') : pill('On time', 'ok')}` : e.status === 'On Leave' ? pill('On leave', 'info') : pill('Absent', 'crit')], ['Shift', `Starts ${SHIFT_START}, ends 17:00`], ['This month', `${18 - (e.id.charCodeAt(7) % 3)} days present · ${e.id.charCodeAt(8) % 3} late arrivals`]])); }
+  if (tab === 'perf') content = table([{h:'Cycle', f:a => a.cycle}, {h:'Due', f:a => D(a.due)}, {h:'Status', f:a => pill(a.status, a.status === 'Completed' ? 'ok' : 'gold')}, {h:'Score', r:1, f:a => a.score ?? '-'}], APPRAISALS.filter(a => a.emp === e.id), {empty:'No appraisals recorded.'});
+  if (tab === 'move') content = table([{h:'Effective', f:m => D(m.date)}, {h:'Change', f:m => esc(m.kind)}, {h:'Previous position', f:m => esc(m.prev)}, {h:'New position', f:m => esc(m.next)}, {h:'Reason', f:m => esc(m.reason)}], e.movements, {empty:'No transfers, promotions or salary adjustments yet.'});
+  if (tab === 'disc') content = table([{h:'Case', f:c => c.id}, {h:'Type', f:c => c.kind}, {h:'Category', f:c => esc(c.category)}, {h:'Stage', f:c => pill(c.stage, c.stage === 'Closed' ? 'ok' : 'warn')}, {h:'Decision', f:c => esc(c.decision || 'Pending')}], CASES.filter(c => c.emp === e.id), {empty:'No disciplinary or grievance records.'});
+  if (tab === 'train') content = table([{h:'Training', f:t => esc(t.title)}, {h:'Provider', f:t => esc(t.provider)}, {h:'Date', f:t => D(t.date)}, {h:'Status', f:t => pill(t.done.includes(e.id) ? 'Attended' : t.status, t.done.includes(e.id) ? 'ok' : 'gold')}], TRAININGS.filter(t => t.done.includes(e.id) || (t.status === 'Scheduled' && (t.audience === 'All staff' || t.audience.includes(e.dept)))), {empty:'No training history.'});
+  if (tab === 'pay') content = payslipHtml(e);
+  if (tab === 'exit') { const x = EXITS.find(x => x.emp === e.id); content = x ? exitCard(x) : `<div class="empty">No exit record. ${hr ? '<button class="linkbtn" data-act="startExit" data-id="' + e.id + '">Start an exit</button>' : ''}</div>`; }
+  const head = `<section class="card" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${av(e, 'lg')}<div style="flex:1;min-width:220px"><h2 style="font-size:22px">${esc(nm(e))}</h2><div class="muted">${esc(e.title)} · ${esc(e.dept)} · ${esc(e.branch)}</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${empStatusPill(e.status)}<span class="chip mono">${e.id}</span><span class="chip">${esc(e.type)}</span><span class="chip">${tenure(e).toFixed(1)} yrs service</span></div></div>
+    <div class="actions">${hr ? `<button class="btn" data-act="movement" data-id="${e.id}">Transfer, promote or adjust salary</button><button class="btn" data-act="newCase" data-id="${e.id}">Open disciplinary case</button>` : ''}${self ? `<button class="btn primary" data-act="detailsChange">Request a change to my details</button>` : ''}</div></section>`;
+  return page({crumb:self ? 'My workspace' : 'People / Employees', title:self ? 'My employee file' : 'Employee profile', body:head + tabs('prof', [['file','Employee file'],['job','Employee information'],['docs','Documents'],['leave','Leave'],['att','Attendance'],['perf','Performance'],['move','Movements'],['disc','Disciplinary'],['train','Training'],['pay','Pay'],['exit','Exit']]) + content});
+};
+A.photo = el => { const f = el.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { emp(el.dataset.id).photo = rd.result; audit('Uploaded photo', el.dataset.id, f.name); render(); toast('Photo uploaded'); }; rd.readAsDataURL(f); };
+A.docUp = el => { if (!el.files[0]) return; emp(el.dataset.id).docs[el.dataset.k] = 1; audit('Uploaded document', el.dataset.id, `${el.dataset.k}: ${el.files[0].name}`); render(); toast(`${el.dataset.k} uploaded`); };
+
+/* Add employee (HR maker → MD) */
+A.addEmp = () => {
+  const nextId = 'PSF-' + String(Math.max(...EMP.map(e => +e.id.slice(4))) + 1).padStart(4, '0');
+  formModal({title:'Add employee', sub:'HR is the maker. The new file goes live after the MD approves.', flow:['hr','md'], fields:[
+    {sec:'1. Employee file'}, {id:'id', label:'Employee ID', val:nextId, ro:1, hint:'Generated automatically'}, {id:'photo', label:'Photograph', type:'file', accept:'image/*'},
+    {id:'fn', label:'First name', req:1}, {id:'ln', label:'Last name', req:1}, {id:'g', label:'Gender', type:'select', opts:[['F','Female'],['M','Male']]}, {id:'dob', label:'Date of birth', type:'date', req:1},
+    {id:'nin', label:'National ID (NIN)', req:1, hint:'Stored encrypted; shown masked'}, {id:'phone', label:'Phone', req:1}, {id:'email', label:'Email'}, {id:'addr', label:'Address'},
+    {id:'nokn', label:'Next of kin name', req:1}, {id:'nokp', label:'Next of kin contact', req:1},
+    {sec:'2. Employee information'}, {id:'title', label:'Job title', req:1}, {id:'dept', label:'Department', type:'select', opts:DEPTS}, {id:'branch', label:'Branch', type:'select', opts:BRANCHES},
+    {id:'sup', label:'Supervisor', type:'select', opts:activeEmp().filter(e => ['G1','G2','G3'].includes(e.grade)).map(e => [e.id, nm(e) + ', ' + e.title])},
+    {id:'type', label:'Employment type', type:'select', opts:TYPES, val:'Probationary'}, {id:'joined', label:'Date joined / contract start', type:'date', req:1},
+    {id:'pEnd', label:'Probation end', type:'date', hint:'Default 6 months from start'}, {id:'cEnd', label:'Contract end', type:'date', hint:'For contract and intern staff'},
+    {id:'grade', label:'Grade', type:'select', opts:Object.entries(GRADES).map(([k, g]) => [k, k + ' · ' + g.name]), val:'G4'}, {id:'basic', label:'Basic salary (UGX)', type:'number', req:1},
+    {sec:'3. Documents'}, {id:'docs', label:'CV, academic documents, appointment letter, contract, NDA, JD, ID copy', type:'file', multiple:1, full:1},
+    {sec:'4. Accounts in other systems'}, {id:'sys', label:'Create on approval', type:'select', opts:['Core banking user + PlusPay login + email','Core banking user + email','Email only'], full:1, hint:'Sent to IT automatically once the MD approves'}],
+    onSubmit:v => {
+      const miss = ['fn','ln','dob','nin','phone','nokn','nokp','title','joined','basic'].filter(k => !v[k]); if (miss.length) return formError('Fill all required fields marked *.'), false;
+      const pStart = v.type === 'Probationary' ? v.joined : null; const pEnd = v.pEnd || (pStart ? ISO(new Date(new Date(v.joined).setMonth(new Date(v.joined).getMonth() + 6))) : null);
+      const e = E(v.id, v.fn, v.ln, v.g, v.dob, v.title, v.dept, v.branch, v.sup, v.type, v.joined, v.grade, +v.basic, {pStart, pEnd, cEnd:v.cEnd || null, phone:v.phone, nin:v.nin.slice(0, 3) + '••••••' + v.nin.slice(-3), addr:v.addr || '-', nok:{n:v.nokn, rel:'Next of kin', p:v.nokp}, bal:{Annual:0, Sick:30, Other:6}});
+      if (v.email) e.email = v.email;
+      newReq({type:'New employee', subject:`${v.fn} ${v.ln}, ${v.title}`, maker:USERS.hr.emp, note:'', fields:[['Employee ID', v.id], ['Name', `${v.fn} ${v.ln}`], ['Job title', v.title], ['Department', v.dept], ['Branch', v.branch], ['Employment type', v.type], ['Start date', D(v.joined)], ['Basic salary', UGX(v.basic)], ['Documents', v.docs || 'None attached'], ['Other systems', v.sys]], payload:{e}});
+      toast('Sent to the MD for approval');
+    }});
+};
+
+/* ================= ATTENDANCE ================= */
+VIEWS.attendance = () => {
+  const m = metrics();
+  const rows = m.act.map(e => { const a = ATT[e.id]; const st = a ? (a[0] > SHIFT_START ? 'Late' : 'Present') : e.status === 'On Leave' ? 'On leave' : 'Absent'; return {e, a, st}; });
+  const body = `<div class="kpis">${[['Present', rows.filter(r => r.st === 'Present').length], ['Late', rows.filter(r => r.st === 'Late').length], ['Absent', rows.filter(r => r.st === 'Absent').length], ['On leave', rows.filter(r => r.st === 'On leave').length]].map(([l, v]) => `<div class="kpi" style="cursor:default"><span class="l">${l}</span><span class="v">${v}</span><span class="d">Today</span></div>`).join('')}</div>
+  <div class="note"><b>Clock in and out.</b> Biometric devices at each branch sync every 15 minutes. Mobile clock-in works only inside a branch geo-fence. Missed punches are fixed through an attendance correction (Staff → HR → MD).</div>
+  ${table([{h:'Employee', f:r => person(r.e)}, {h:'Branch', f:r => esc(r.e.branch)}, {h:'Clock in', f:r => r.a ? `<span class="mono">${r.a[0]}</span>` : '-'}, {h:'Clock out', f:r => r.a ? '<span class="faint">Expected 17:00</span>' : '-'}, {h:'Source', f:r => r.a ? esc(r.a[2]) : '-'}, {h:'Status', f:r => pill(r.st, {Present:'ok', Late:'warn', Absent:'crit', 'On leave':'info'}[r.st])}], rows)}`;
+  return page({crumb:'People', title:'Attendance', sub:`Thursday 29 October 2026 · shift starts ${SHIFT_START}`, actions:`<button class="btn" data-act="sync">Sync devices now</button>`, body});
+};
+A.sync = () => { audit('Synced attendance devices', 'ATT', '3 branch devices'); toast('3 branch devices synced. No new punches.'); };
+
+/* ================= LEAVE ================= */
+VIEWS.leave = () => {
+  const tab = curTab('lv', 'track');
+  let content;
+  if (tab === 'track') content = table([{h:'Employee', f:l => person(emp(l.emp))}, {h:'Type', f:l => l.type}, {h:'From', f:l => D(l.from)}, {h:'To', f:l => D(l.to)}, {h:'Days', r:1, f:l => l.days}, {h:'Status', f:l => l.from <= ISO(TODAY) && l.to >= ISO(TODAY) ? pill('On leave now', 'info') : l.to < ISO(TODAY) ? pill('Taken', 'plain') : pill('Upcoming', 'ok')}], LEAVES)
+    + `<h3 style="font-size:15px;margin-top:6px">Leave requests in the approval queue</h3>` + table([{h:'Ref', f:r => r.id}, {h:'Employee', f:r => person(emp(r.payload.emp))}, {h:'Request', f:r => esc(r.subject)}, {h:'Stage', f:r => reqStatus(r)}], REQS.filter(r => r.type === 'Leave application' && r.status !== 'approved'), {click:r => `data-act="open" data-id="${r.id}"`});
+  if (tab === 'bal') content = table([{h:'Employee', f:e => person(e)}, {h:'Annual', r:1, f:e => e.bal.Annual}, {h:'Sick', r:1, f:e => e.bal.Sick}, {h:'Other', r:1, f:e => e.bal.Other}, {h:'Unused annual leave value', r:1, f:e => UGX(leavePay(e, e.bal.Annual))}], activeEmp());
+  if (tab === 'rules') content = table([{h:'Leave type', f:([k]) => `<b>${k}</b>`}, {h:'Entitlement', f:([, v]) => v.days + ' days'}, {h:'Rule', f:([, v]) => esc(v.note)}, {h:'Approval', f:() => 'Staff → HR → MD'}], Object.entries(LEAVE_TYPES))
+    + `<div class="note warn"><b>Leave pay when leave is not taken.</b> Unused annual leave is paid on exit as part of final dues. Paying cash instead of leave while still employed needs a written PlusSave policy and MD approval; legal should confirm this against the Employment Act, which treats annual leave as a right. Formula: basic salary ÷ ${CONFIG.leaveDivisor} × unused days.</div>`;
+  if (tab === 'hol') content = table([{h:'Date', f:d => D(d)}, {h:'Day', f:d => new Date(d).toLocaleDateString('en-GB', {weekday:'long'})}], HOLIDAYS) + '<div class="note">Public holidays and weekends are excluded when counting leave days. HR updates this list when Government gazettes Eid dates.</div>';
+  return page({crumb:'People', title:'Leave management', sub:'Annual, sick, maternity, paternity, unpaid and other leave.', body:tabs('lv', [['track','Leave tracker'],['bal','Balances'],['rules','Leave types and rules'],['hol','Public holidays']]) + content});
+};
+
+/* Staff: apply for leave */
+VIEWS.myleave = () => {
+  const e = me();
+  const body = `<div class="kpis">${Object.entries(LEAVE_TYPES).filter(([, v]) => !v.g || v.g === e.g).map(([k, v]) => `<div class="kpi" style="cursor:default"><span class="l">${k}</span><span class="v">${e.bal[k] ?? v.days}</span><span class="d">days available</span></div>`).join('')}</div>
+  ${card('How your leave is approved', flowHtml(['staff','hr','md']) + '<p class="muted" style="margin:10px 0 0">HR checks your balance and reliever, then the MD approves. You get an email and SMS at each step.</p>')}
+  ${card('My leave history', table([{h:'Type', f:l => l.type}, {h:'From', f:l => D(l.from)}, {h:'To', f:l => D(l.to)}, {h:'Days', r:1, f:l => l.days}, {h:'Status', f:l => pill(l.status, 'ok')}], LEAVES.filter(l => l.emp === e.id)))}`;
+  return page({crumb:'My workspace', title:'Apply for leave', sub:'Working days are counted for you, skipping weekends and public holidays.', actions:`<button class="btn primary" data-act="applyLeave">Apply for leave</button>`, body});
+};
+A.applyLeave = () => {
+  const e = me();
+  const types = Object.entries(LEAVE_TYPES).filter(([, v]) => !v.g || v.g === e.g).map(([k]) => k);
+  formModal({title:'Apply for leave', sub:`${nm(e)} · ${e.title}`, flow:['staff','hr','md'], fields:[
+    {id:'type', label:'Leave type', type:'select', opts:types}, {id:'reliever', label:'Reliever (who covers your desk)', type:'select', opts:activeEmp().filter(x => x.id !== e.id && x.branch === e.branch).map(x => [x.id, nm(x)])},
+    {id:'from', label:'From', type:'date', req:1, val:'2026-11-09'}, {id:'to', label:'To', type:'date', req:1, val:'2026-11-13'},
+    {type:'calc'}, {id:'reason', label:'Reason', type:'textarea', full:1}, {id:'att', label:'Attachment (medical form, burial notice, etc.)', type:'file', full:1}],
+    onInput:v => { const d = workingDays(v.from, v.to), bal = e.bal[v.type] ?? LEAVE_TYPES[v.type].days, after = bal - d, notice = v.from ? fromToday(v.from) : 0;
+      $('#calc').innerHTML = `<b>${d} working day${d === 1 ? '' : 's'}</b> · balance ${bal} → ${after}${after < 0 ? ' <span class="pill crit">Not enough balance</span>' : ''}${v.type === 'Annual' && notice < 7 ? ' <span class="pill warn">Less than 7 days notice</span>' : ''}${v.type === 'Sick' && d > 2 ? ' <span class="pill warn">Medical form required</span>' : ''}<div class="muted" style="font-size:12px;margin-top:4px">${esc(LEAVE_TYPES[v.type].note)}</div>`; },
+    onSubmit:v => { const d = workingDays(v.from, v.to); const bal = e.bal[v.type] ?? LEAVE_TYPES[v.type].days;
+      if (!v.from || !v.to || d < 1) return formError('Choose a start and end date that include at least one working day.'), false;
+      if (d > bal && v.type !== 'Unpaid') return formError(`You have ${bal} ${v.type.toLowerCase()} days left. Shorten the dates or choose Unpaid leave.`), false;
+      if (v.type === 'Sick' && d > 2 && !v.att) return formError('Attach a medical form for sick leave longer than 2 days.'), false;
+      newReq({type:'Leave application', subject:`${v.type} leave, ${D(v.from)} to ${D(v.to)} (${d} days)`, maker:e.id, note:v.reason,
+        fields:[['Leave type', v.type], ['Dates', `${D(v.from)} to ${D(v.to)}`], ['Working days', String(d)], ['Balance before', `${bal} days`], ['Reliever', nm(emp(v.reliever))], ['Attachment', v.att || 'None']],
+        payload:{emp:e.id, type:v.type, from:v.from, to:v.to, days:d}});
+      toast('Sent to HR for review'); }});
+};
+
+/* ================= PERFORMANCE ================= */
+VIEWS.performance = () => {
+  const done = APPRAISALS.filter(a => a.score != null);
+  const avg = done.length ? (done.reduce((s, a) => s + a.score, 0) / done.length).toFixed(1) : '-';
+  const body = `<div class="kpis">${[['Due in 30 days', APPRAISALS.filter(a => a.status !== 'Completed' && fromToday(a.due) <= 30).length, 'Alerts sent to staff and supervisors'], ['Completed this year', done.length, 'H1 2026 cycle'], ['Average score', avg, 'Scale 1 to 5']].map(([l, v, d]) => `<div class="kpi" style="cursor:default"><span class="l">${l}</span><span class="v">${v}</span><span class="d">${d}</span></div>`).join('')}</div>
+  ${card('Appraisal steps', `<div class="toolbar">${['Self-appraisal by staff','Supervisor scores KPIs','HR moderates','MD signs off ratings that change pay'].map((s, i) => `<div class="stage-card"><b>${i + 1}</b> ${s}</div>${i < 3 ? '<span class="arrow">→</span>' : ''}`).join('')}</div>`)}
+  ${table([{h:'Employee', f:a => person(emp(a.emp))}, {h:'Cycle', f:a => a.cycle}, {h:'Due', f:a => D(a.due)}, {h:'Status', f:a => pill(a.status, a.status === 'Completed' ? 'ok' : fromToday(a.due) <= 7 ? 'warn' : 'gold')}, {h:'Score', r:1, f:a => a.score ?? '-'},
+    {h:'', f:a => S.role === 'hr' && a.status !== 'Completed' ? `<button class="btn sm" data-act="remind" data-id="${a.emp}">Send reminder</button>` : ''}], APPRAISALS)}`;
+  return page({crumb:'Talent', title:'Performance management', sub:'Appraisal cycles, KPI scores and due-date alerts.', actions:S.role === 'hr' ? '<button class="btn primary" data-act="cycle">Start H2 2026 cycle</button>' : '', body});
+};
+A.remind = el => { notify(el.dataset.id, 'Reminder: your appraisal is due. Complete your self-appraisal.'); audit('Sent appraisal reminder', el.dataset.id, ''); toast('Reminder sent by email and SMS'); };
+A.cycle = () => toast('H2 2026 cycle is already open for 6 staff. Self-appraisal forms sent.');
+
+/* ================= PROBATION AND CONTRACTS ================= */
+VIEWS.probation = () => {
+  const m = metrics(), hr = S.role === 'hr';
+  const pend = id => REQS.find(r => r.payload.emp === id && ['Contract renewal','Probation confirmation'].includes(r.type) && r.status === 'pending');
+  const body = `<div class="note warn"><b>Alerts.</b> HR and the supervisor are alerted 90, 60 and 30 days before a contract ends and 30 days before probation ends. If pay continues past probation without a decision, the employee may be treated as confirmed, so act before the end date.</div>
+  ${card('Probation', table([{h:'Employee', f:e => person(e)}, {h:'Started', f:e => D(e.pStart)}, {h:'Ends', f:e => D(e.pEnd)}, {h:'Days left', r:1, f:e => pill(fromToday(e.pEnd) + ' days', fromToday(e.pEnd) <= 30 ? 'crit' : 'warn')}, {h:'Action', f:e => pend(e.id) ? reqStatus(pend(e.id)) : hr ? `<button class="btn sm primary" data-act="confirmProb" data-id="${e.id}">Confirm or extend</button>` : '-'}], activeEmp().filter(e => e.type === 'Probationary'), {empty:'No one on probation.'}))}
+  ${card('Contracts', table([{h:'Employee', f:e => person(e)}, {h:'Type', f:e => e.type}, {h:'Contract end', f:e => D(e.cEnd)}, {h:'Days left', r:1, f:e => pill(fromToday(e.cEnd) + ' days', fromToday(e.cEnd) <= 30 ? 'crit' : fromToday(e.cEnd) <= 90 ? 'warn' : 'plain')}, {h:'Action', f:e => pend(e.id) ? reqStatus(pend(e.id)) : hr ? `<button class="btn sm" data-act="renew" data-id="${e.id}">Renew</button> <button class="btn sm danger" data-act="startExit" data-id="${e.id}" data-t="End of contract">Do not renew</button>` : '-'}], activeEmp().filter(e => e.cEnd).sort((a, b) => a.cEnd.localeCompare(b.cEnd))))}`;
+  return page({crumb:'Talent', title:'Probation and contract management', sub:'Confirmations, extensions and renewals go HR → MD.', body});
+};
+A.confirmProb = el => { const e = emp(el.dataset.id);
+  formModal({title:'Probation decision', sub:`${nm(e)} · ends ${D(e.pEnd)}`, flow:['hr','md'], fields:[{id:'dec', label:'Decision', type:'select', opts:['Confirm in service','Extend probation by 3 months','Terminate at end of probation']}, {id:'eff', label:'Effective date', type:'date', val:e.pEnd}, {id:'score', label:'Probation review score (1 to 5)', type:'number', val:4}, {id:'reason', label:'Reason', type:'textarea', full:1, req:1, val:'Met targets for social media campaign and customer onboarding.'}],
+    onSubmit:v => { if (!v.reason) return formError('Give a reason for the decision.'), false;
+      if (v.dec === 'Confirm in service') newReq({type:'Probation confirmation', subject:`${nm(e)}: confirm in service`, maker:USERS.hr.emp, note:v.reason, fields:[['Employee', nm(e) + ', ' + e.title], ['Probation', `${D(e.pStart)} to ${D(e.pEnd)}`], ['Decision', v.dec], ['Effective', D(v.eff)], ['Review score', v.score + ' / 5']], payload:{emp:e.id, eff:v.eff, reason:v.reason}});
+      else newReq({type:'Contract renewal', subject:`${nm(e)}: ${v.dec.toLowerCase()}`, maker:USERS.hr.emp, note:v.reason, fields:[['Employee', nm(e)], ['Decision', v.dec], ['Effective', D(v.eff)]], payload:{emp:e.id, oldEnd:e.pEnd, newEnd:ISO(new Date(new Date(e.pEnd).setMonth(new Date(e.pEnd).getMonth() + 3))), reason:v.dec}});
+      toast('Sent to the MD'); }}); };
+A.renew = el => { const e = emp(el.dataset.id);
+  formModal({title:'Renew contract', sub:`${nm(e)} · ends ${D(e.cEnd)}`, flow:['hr','md'], fields:[{id:'end', label:'New end date', type:'date', req:1, val:ISO(new Date(new Date(e.cEnd).setFullYear(new Date(e.cEnd).getFullYear() + 1)))}, {id:'sal', label:'Salary on renewal (UGX)', type:'number', val:e.basic}, {id:'reason', label:'Reason', type:'textarea', full:1, req:1}],
+    onSubmit:v => { if (!v.reason) return formError('Give a reason.'), false; newReq({type:'Contract renewal', subject:`${nm(e)}: renew to ${D(v.end)}`, maker:USERS.hr.emp, note:v.reason, fields:[['Employee', nm(e) + ', ' + e.title], ['Current end', D(e.cEnd)], ['New end', D(v.end)], ['Salary', UGX(v.sal)]], payload:{emp:e.id, oldEnd:e.cEnd, newEnd:v.end, reason:v.reason}}); toast('Sent to the MD'); }}); };
+
+/* ================= TRAINING ================= */
+VIEWS.training = () => {
+  const body = table([{h:'Training', f:t => `<b>${esc(t.title)}</b><div class="muted" style="font-size:12px">${esc(t.provider)}</div>`}, {h:'Audience', f:t => esc(t.audience)}, {h:'Date', f:t => D(t.date)}, {h:'Mandatory', f:t => t.mandatory ? pill('Yes', 'warn') : 'No'}, {h:'Attended', r:1, f:t => t.done.length || '-'}, {h:'Status', f:t => pill(t.status, t.status === 'Completed' ? 'ok' : 'gold')}], TRAININGS)
+    + card('Training history by employee', table([{h:'Employee', f:e => person(e)}, {h:'Trainings attended', r:1, f:e => TRAININGS.filter(t => t.done.includes(e.id)).length}, {h:'Latest', f:e => esc((TRAININGS.find(t => t.done.includes(e.id)) || {}).title || 'None yet')}, {h:'AML/CFT refresher', f:e => pill('Due 20 Nov', 'warn')}], activeEmp()));
+  return page({crumb:'Talent', title:'Training and development', sub:'What has been conducted, who attended, and what is due.', actions:S.role === 'hr' ? '<button class="btn primary" data-act="recTrain">Record a training</button>' : '', body});
+};
+A.recTrain = () => formModal({title:'Record a training', submit:'Save training', fields:[{id:'title', label:'Title', req:1, full:1}, {id:'prov', label:'Provider'}, {id:'date', label:'Date', type:'date', val:ISO(TODAY)}, {id:'aud', label:'Audience', val:'All staff'}, {id:'mand', label:'Mandatory', type:'select', opts:['No','Yes']}, {id:'att', label:'Attendance register', type:'file', full:1}],
+  onSubmit:v => { if (!v.title) return formError('Enter a title.'), false; TRAININGS.unshift({id:'TR-' + (30 + TRAININGS.length), title:v.title, provider:v.prov || 'Internal', date:v.date, mandatory:v.mand === 'Yes', status:v.date <= ISO(TODAY) ? 'Completed' : 'Scheduled', audience:v.aud, done:[]}); audit('Recorded training', 'TRAINING', v.title); toast('Training saved'); }});
+
+/* ================= RECRUITMENT ================= */
+EFFECTS['Recruitment requisition'] = r => VACANCIES.unshift(Object.assign({id:'VC-' + (10 + VACANCIES.length), opened:ISO(TODAY), applicants:0, stage:'Advertised'}, r.payload));
+VIEWS.recruitment = () => {
+  const stages = ['Requisition','Advertised','Shortlisting','Interviews','Offer','Onboarding'];
+  const body = card('Hiring pipeline', `<div class="toolbar">${stages.map((s, i) => `<div class="stage-card"><b>${VACANCIES.filter(v => v.stage === s).length}</b> ${s}</div>${i < stages.length - 1 ? '<span class="arrow">→</span>' : ''}`).join('')}</div><p class="muted" style="margin:10px 0 0">A requisition needs MD approval before a post is advertised. On offer acceptance HR uses Add employee, which carries the candidate's details into the new file.</p>`)
+    + table([{h:'Vacancy', f:v => `<b>${esc(v.title)}</b><div class="muted" style="font-size:12px">${esc(v.reason)}</div>`}, {h:'Department', f:v => esc(v.dept)}, {h:'Branch', f:v => esc(v.branch)}, {h:'Opened', f:v => D(v.opened)}, {h:'Closes', f:v => D(v.closes)}, {h:'Applicants', r:1, f:v => v.applicants}, {h:'Stage', f:v => pill(v.stage, 'info')}], VACANCIES);
+  return page({crumb:'Talent', title:'Recruitment', sub:'Vacant positions and where each one is in hiring.', actions:S.role === 'hr' ? '<button class="btn primary" data-act="newReq">New requisition</button>' : '', body});
+};
+A.newReq = () => formModal({title:'New staff requisition', flow:['hr','md'], fields:[{id:'title', label:'Position', req:1}, {id:'dept', label:'Department', type:'select', opts:DEPTS}, {id:'branch', label:'Branch', type:'select', opts:BRANCHES}, {id:'closes', label:'Advert closes', type:'date', val:'2026-11-30'}, {id:'reason', label:'Reason (new role or replacement)', full:1, req:1}, {id:'budget', label:'Budgeted salary (UGX)', type:'number'}],
+  onSubmit:v => { if (!v.title || !v.reason) return formError('Enter the position and reason.'), false; newReq({type:'Recruitment requisition', subject:`${v.title}, ${v.branch}`, maker:USERS.hr.emp, fields:[['Position', v.title], ['Department', v.dept], ['Branch', v.branch], ['Reason', v.reason], ['Budget', v.budget ? UGX(v.budget) : 'Not set']], payload:{title:v.title, dept:v.dept, branch:v.branch, closes:v.closes, reason:v.reason}}); toast('Requisition sent to the MD'); }});
+
+/* ================= TRANSFERS, PROMOTIONS, SALARY ================= */
+VIEWS.movements = () => {
+  const all = EMP.flatMap(e => e.movements.map(m => Object.assign({e}, m))).sort((a, b) => b.date.localeCompare(a.date));
+  const pend = REQS.filter(r => ['Transfer, promotion or salary change','Contract renewal','Probation confirmation'].includes(r.type) && r.status !== 'approved');
+  const body = (pend.length ? card('In approval', table([{h:'Ref', f:r => r.id}, {h:'Request', f:r => esc(r.subject)}, {h:'Stage', f:r => reqStatus(r)}, {h:'SLA', f:r => sla(r)}], pend, {click:r => `data-act="open" data-id="${r.id}"`})) : '')
+    + card('History', table([{h:'Employee', f:m => person(m.e)}, {h:'Change', f:m => esc(m.kind)}, {h:'Previous position', f:m => esc(m.prev)}, {h:'New position', f:m => esc(m.next)}, {h:'Effective date', f:m => D(m.date)}, {h:'Reason', f:m => esc(m.reason)}], all, {empty:'Approved changes will be listed here with previous and new position, salary and effective date.'}));
+  return page({crumb:'Talent', title:'Transfers, promotions and salary adjustments', sub:'Every change records the previous position, new position, effective date, new salary and reason.', actions:S.role === 'hr' ? '<button class="btn primary" data-act="movement">New change</button>' : '', body});
+};
+A.movement = el => {
+  const pre = el && el.dataset.id;
+  const opts = activeEmp().map(e => [e.id, nm(e) + ' · ' + e.title]);
+  const first = emp(pre || opts[0][0]);
+  S._mvEmp = null;
+  formModal({title:'Transfer, promotion or salary adjustment', sub:'Takes effect on the effective date after MD approval', flow:['hr','md'], fields:[
+    {id:'emp', label:'Employee', type:'select', opts, val:first.id, full:1}, {id:'kind', label:'Change type', type:'select', opts:['Transfer','Promotion','Promotion and transfer','Salary adjustment','Acting appointment','Demotion']},
+    {id:'eff', label:'Effective date', type:'date', req:1, val:'2026-11-01'},
+    {sec:'Previous position'}, {id:'pt', label:'Position', ro:1, val:first.title}, {id:'pb', label:'Branch', ro:1, val:first.branch}, {id:'pg', label:'Grade', ro:1, val:first.grade}, {id:'ps', label:'Salary (UGX)', ro:1, val:N(first.basic)},
+    {sec:'New position'}, {id:'title', label:'New position', req:1, val:first.title}, {id:'branch', label:'New branch', type:'select', opts:BRANCHES, val:first.branch}, {id:'dept', label:'Department', type:'select', opts:DEPTS, val:first.dept},
+    {id:'grade', label:'New grade', type:'select', opts:Object.keys(GRADES), val:first.grade}, {id:'salary', label:'New salary (UGX)', type:'number', req:1, val:first.basic}, {type:'calc'},
+    {id:'reason', label:'Reason', type:'textarea', full:1, req:1}],
+    onInput:v => { const e = emp(v.emp); if (S._mvEmp !== v.emp) { S._mvEmp = v.emp; ['pt','pb','pg'].forEach((k, i) => document.getElementById('f_' + k).value = [e.title, e.branch, e.grade][i]); document.getElementById('f_ps').value = N(e.basic);
+        if (!pre || v.emp !== pre) { document.getElementById('f_title').value = e.title; document.getElementById('f_salary').value = e.basic; document.getElementById('f_branch').value = e.branch; document.getElementById('f_dept').value = e.dept; document.getElementById('f_grade').value = e.grade; } }
+      const s = +document.getElementById('f_salary').value || 0, ch = (s - e.basic) / e.basic * 100;
+      $('#calc').innerHTML = `Salary change: <b>${ch >= 0 ? '+' : ''}${ch.toFixed(1)}%</b> (${UGX(s - e.basic)} a month). Monthly cost incl. 10% employer NSSF: <b>${UGX((s - e.basic) * 1.1)}</b>`; },
+    onSubmit:v => { const e = emp(v.emp); if (!v.reason || !v.title || !v.salary) return formError('Fill the new position, salary and reason.'), false;
+      newReq({type:'Transfer, promotion or salary change', subject:`${nm(e)}: ${v.kind.toLowerCase()}`, maker:USERS.hr.emp, note:v.reason,
+        fields:[['Change type', v.kind], ['Previous position', `${e.title}, ${e.branch}, Grade ${e.grade}`], ['New position', `${v.title}, ${v.branch}, Grade ${v.grade}`], ['Previous salary', UGX(e.basic)], ['New salary', UGX(v.salary)], ['Effective date', D(v.eff)], ['Reason', v.reason]],
+        payload:{emp:e.id, kind:v.kind, title:v.title, branch:v.branch, dept:v.dept, salary:+v.salary, grade:v.grade, eff:v.eff, reason:v.reason}});
+      S._mvEmp = null; toast('Sent to the MD'); }});
+};
+
+/* ================= PAYROLL ================= */
+function payStepper() {
+  const st = ['Draft','Submitted','Approved','Posted'], i = st.indexOf(PAY.status);
+  return `<div class="flow" style="--n:4">${[['HR payroll input','Draft'], ['Submitted to MD','Submitted'], ['MD approved','Approved'], ['Posted to core banking','Posted']].map(([l], k) => `<div class="step ${k < i || PAY.status === 'Posted' ? 'done' : k === i ? 'cur' : ''}"><div class="dotc">${k < i || PAY.status === 'Posted' ? '✓' : k + 1}</div><div class="sl">${l}</div></div>`).join('')}</div>`;
+}
+VIEWS.payroll = () => {
+  const reg = payRegister(), t = reg.tot, tab = curTab('pay', 'input'), hr = S.role === 'hr';
+  const r = PAY.reqId && REQS.find(x => x.id === PAY.reqId);
+  if (r && r.status === 'approved' && PAY.status === 'Submitted') PAY.status = 'Approved';
+  let retNote = '';
+  if (r && ['returned','rejected'].includes(r.status) && PAY.status !== 'Posted') { PAY.status = 'Draft'; const h = r.hist[r.hist.length - 1]; retNote = `<div class="note warn"><b>MD ${r.status} ${r.id}:</b> ${esc(h.c)} Fix the inputs and submit again.</div>`; }
+  let content;
+  if (tab === 'input') content = `<div class="note"><b>Payroll input for October 2026.</b> Salary and grade allowances load from each employee file. Staff loan repayments come from the core banking loan schedule. Add one-off items below: overtime, commission, bonus, arrears, leave pay or deductions.</div>`
+    + table([{h:'Employee', f:i => person(emp(i.emp))}, {h:'Item', f:i => pill(i.kind, i.kind === 'Deduction' ? 'crit' : 'brand')}, {h:'Note', f:i => esc(i.note)}, {h:'Amount (UGX)', r:1, f:i => (i.kind === 'Deduction' ? '-' : '') + N(i.amt)}, {h:'', f:(i) => hr && PAY.status === 'Draft' ? `<button class="btn sm" data-act="delInput" data-i="${PAY.inputs.indexOf(i)}">Remove</button>` : ''}], PAY.inputs);
+  if (tab === 'reg') content = table([{h:'Employee', f:l => person(l.e, l.final ? 'Final dues (exit)' : l.e.grade)}, {h:'Basic', r:1, f:l => N(l.basic)}, {h:'Allowances', r:1, f:l => N(l.allowances)}, {h:'Other earnings', r:1, f:l => N(l.extra)}, {h:'Gross', r:1, f:l => `<b>${N(l.gross)}</b>`}, {h:'NSSF 5%', r:1, f:l => N(l.nssfEe)}, {h:'PAYE', r:1, f:l => N(l.paye)}, {h:'LST', r:1, f:l => N(l.lst)}, {h:'Staff loan', r:1, f:l => N(l.loan)}, {h:'Savings', r:1, f:l => N(l.sav)}, {h:'Other ded.', r:1, f:l => N(l.otherDed)}, {h:'Net pay', r:1, f:l => `<b>${N(l.net)}</b>`}, {h:'Employer NSSF 10%', r:1, f:l => N(l.nssfEr)}],
+    reg.lines, {foot:`<td>Total · ${reg.lines.length} staff</td><td class="r num">${N(reg.lines.reduce((s, l) => s + l.basic, 0))}</td><td class="r num">${N(reg.lines.reduce((s, l) => s + l.allowances, 0))}</td><td class="r num">${N(t.extra)}</td><td class="r num">${N(t.gross)}</td><td class="r num">${N(t.nssfEe)}</td><td class="r num">${N(t.paye)}</td><td class="r num">${N(t.lst)}</td><td class="r num">${N(t.loan)}</td><td class="r num">${N(t.sav)}</td><td class="r num">${N(t.otherDed)}</td><td class="r num">${N(t.net)}</td><td class="r num">${N(t.nssfEr)}</td>`});
+  if (tab === 'report') { const by = k => [...new Set(reg.lines.map(l => l.e[k]))].map(v => { const ls = reg.lines.filter(l => l.e[k] === v); return {v, n:ls.length, g:ls.reduce((s, l) => s + l.gross, 0), net:ls.reduce((s, l) => s + l.net, 0)}; });
+    content = `<div class="grid g2">${card('Statutory remittances', table([{h:'Item', f:x => x[0]}, {h:'Pay to', f:x => x[1]}, {h:'Due', f:x => x[2]}, {h:'Amount (UGX)', r:1, f:x => N(x[3])}], [['PAYE','URA','15 Nov 2026',t.paye], ['NSSF (5% staff + 10% employer)','NSSF','15 Nov 2026',t.nssfEe + t.nssfEr], ['Local Service Tax (instalment 4 of 4)','KCCA / local government','As set by council',t.lst]]))}
+      ${card('Payroll cost', `<dl class="kv"><dt>Gross pay</dt><dd>${UGX(t.gross)}</dd><dt>Employer NSSF 10%</dt><dd>${UGX(t.nssfEr)}</dd><dt>Total employment cost</dt><dd><b>${UGX(t.gross + t.nssfEr)}</b></dd><dt>Net pay to staff accounts</dt><dd>${UGX(t.net)}</dd><dt>Staff loans to core banking</dt><dd>${UGX(t.loan)}</dd><dt>Savings to core banking</dt><dd>${UGX(t.sav)}</dd></dl>`)}</div>
+      <div class="grid g2">${card('By branch', table([{h:'Branch', f:x => esc(x.v)}, {h:'Staff', r:1, f:x => x.n}, {h:'Gross', r:1, f:x => N(x.g)}, {h:'Net', r:1, f:x => N(x.net)}], by('branch')))}${card('By department', table([{h:'Department', f:x => esc(x.v)}, {h:'Staff', r:1, f:x => x.n}, {h:'Gross', r:1, f:x => N(x.g)}, {h:'Net', r:1, f:x => N(x.net)}], by('dept')))}</div>`; }
+  if (tab === 'hist') content = table([{h:'Period', f:p => p.period}, {h:'Staff', r:1, f:p => p.staff}, {h:'Gross', r:1, f:p => N(p.gross)}, {h:'Net', r:1, f:p => N(p.net)}, {h:'Status', f:p => pill(p.status, 'ok')}], [...PAYROLL_HIST].reverse());
+  let acts = '';
+  if (hr && PAY.status === 'Draft') acts = `<button class="btn" data-act="addInput">Add payroll input</button><button class="btn primary" data-act="submitPay">Submit to MD for approval</button>`;
+  if (PAY.status === 'Submitted') acts = S.role === 'md' && r ? `<button class="btn primary" data-act="open" data-id="${r.id}">Review and approve</button>` : `<span class="pill gold">Waiting for MD approval</span>`;
+  if (PAY.status === 'Approved' && (hr || S.role === 'md')) acts = `<button class="btn primary" data-act="postPay">Post to core banking</button>`;
+  if (PAY.status === 'Posted') acts = `<span class="pill ok">Posted · payslips sent</span>`;
+  const body = `<div class="kpis">${[['Gross pay', UGX(t.gross)], ['PAYE', UGX(t.paye)], ['NSSF total (15%)', UGX(t.nssfEe + t.nssfEr)], ['Net pay', UGX(t.net)]].map(([l, v]) => `<div class="kpi" style="cursor:default"><span class="l">${l}</span><span class="v" style="font-size:20px">${v}</span><span class="d">October 2026</span></div>`).join('')}</div>
+    ${retNote}${card('October 2026 run', payStepper())}${tabs('pay', [['input','Payroll input'], ['reg','Payroll register'], ['report','Payroll report'], ['hist','Past runs']])}${content}
+    <div class="note"><b>Rules applied.</b> PAYE bands from 1 July 2026: nil to 335,000; 20% to 410,000; 25% to 485,000; 30% above, plus 10% on income above 10,000,000. NSSF 5% staff and 10% employer on gross. LST is deducted July to October and reduces chargeable income. All rates live in Payroll setup so HR can update them when the law changes.</div>`;
+  return page({crumb:'Pay', title:'Payroll', sub:'Salary, deductions, leave pay and the payroll report. Maker: HR. Checker: MD.', actions:acts, body});
+};
+A.delInput = el => { PAY.inputs.splice(+el.dataset.i, 1); render(); toast('Input removed'); };
+A.addInput = () => formModal({title:'Add payroll input', submit:'Add to October payroll', fields:[{id:'emp', label:'Employee', type:'select', opts:activeEmp().map(e => [e.id, nm(e)]), full:1}, {id:'kind', label:'Item', type:'select', opts:['Overtime','Commission','Bonus','Arrears','Leave pay','Deduction']}, {id:'amt', label:'Amount (UGX)', type:'number', req:1}, {id:'note', label:'Note', full:1, req:1}],
+  onSubmit:v => { if (!v.amt || !v.note) return formError('Enter an amount and a note.'), false; PAY.inputs.push({emp:v.emp, kind:v.kind, amt:+v.amt, note:v.note}); audit('Added payroll input', 'PAY-2026-10', `${v.kind} ${N(v.amt)} for ${nm(emp(v.emp))}`); toast('Added'); }});
+A.submitPay = () => { const reg = payRegister(), t = reg.tot;
+  const r = newReq({type:'Monthly payroll', subject:'October 2026 payroll', maker:USERS.hr.emp, note:'Inputs checked against attendance and approved leave.', fields:[['Period', 'October 2026'], ['Staff paid', String(reg.lines.length)], ['Gross pay', UGX(t.gross)], ['PAYE', UGX(t.paye)], ['NSSF 5% + 10%', UGX(t.nssfEe + t.nssfEr)], ['LST', UGX(t.lst)], ['Staff loans and savings', UGX(t.loan + t.sav)], ['Net pay', UGX(t.net)], ['One-off inputs', PAY.inputs.length + ' items']], payload:{}});
+  PAY.status = 'Submitted'; PAY.reqId = r.id; render(); toast('October payroll sent to the MD'); };
+A.postPay = () => { const reg = payRegister(); PAY.status = 'Posted'; PAYROLL_HIST.push({period:'2026-10', staff:reg.lines.length, gross:reg.tot.gross, net:reg.tot.net, status:'Posted'}); audit('Posted payroll to core banking', 'PAY-2026-10', `${reg.lines.length} salary credits, ${UGX(reg.tot.net)}`); NOTES.unshift({to:'PSF-0142', text:'Your October 2026 payslip is ready.', at:now(), read:false}); render(); toast(`${reg.lines.length} salary credits posted. Payslips emailed.`); };
+function payslipHtml(e) {
+  const l = payLine(e, PAY.inputs, PAY.period);
+  const row = (k, v, neg) => `<tr><td>${k}</td><td class="r num">${neg ? '-' : ''}${N(v)}</td></tr>`;
+  return `<section class="card" style="max-width:640px">${logos()}<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:12px 0"><div><b>Payslip · October 2026</b><div class="muted">${esc(nm(e))} · ${e.id} · ${esc(e.title)}</div></div><div class="muted" style="text-align:right">${esc(e.branch)}<br>Account ${e.acct}</div></div>
+    <div class="tw"><table><thead><tr><th>Earnings</th><th class="r">UGX</th></tr></thead><tbody>${row('Basic salary', l.basic)}${row('Allowances (transport, housing, airtime)', l.allowances)}${l.extra ? row('Other earnings', l.extra) : ''}</tbody><tfoot><tr><td>Gross pay</td><td class="r num">${N(l.gross)}</td></tr></tfoot></table></div>
+    <div class="tw" style="margin-top:10px"><table><thead><tr><th>Deductions</th><th class="r">UGX</th></tr></thead><tbody>${row('PAYE', l.paye, 1)}${row('NSSF 5%', l.nssfEe, 1)}${l.lst ? row('Local Service Tax', l.lst, 1) : ''}${l.loan ? row('Staff loan repayment', l.loan, 1) : ''}${l.sav ? row('Savings', l.sav, 1) : ''}${l.otherDed ? row('Other deductions', l.otherDed, 1) : ''}</tbody><tfoot><tr><td>Net pay</td><td class="r num">${N(l.net)}</td></tr></tfoot></table></div>
+    <p class="faint" style="font-size:12px;margin:10px 0 0">Employer NSSF contribution: ${UGX(l.nssfEr)}. ${PAY.status === 'Posted' ? 'Credited to your account.' : 'Draft until the MD approves and payroll is posted.'}</p></section>`;
+}
+
+/* ================= GRATUITY AND LEAVE PAY ================= */
+VIEWS.gratuity = () => {
+  const hr = S.role === 'hr';
+  const contract = activeEmp().filter(e => e.type === 'Contract');
+  const body = `<div class="grid g2">
+    ${card('Gratuity calculation', `<div class="form" id="gform">
+      <div class="field full"><label for="g_emp">Employee</label><select id="g_emp" data-change="gcalc">${activeEmp().map(e => `<option value="${e.id}">${esc(nm(e))} · ${esc(e.type)}</option>`).join('')}</select></div>
+      <div class="field"><label for="g_basis">Basis (from contract or policy)</label><select id="g_basis" data-change="gcalc"><option value="pct">% of annual basic per year of service</option><option value="months">Months of basic per year of service</option></select></div>
+      <div class="field"><label for="g_rate">Rate</label><input id="g_rate" type="number" value="${CONFIG.gratuity.pct}" step="0.5" data-change="gcalc"><span class="hint">Default 25% of annual basic, set in Payroll setup</span></div>
+      <div class="calc" id="gout"></div></div>
+      ${hr ? '<div class="actions" style="margin-top:12px"><button class="btn primary" data-act="raiseGrat">Raise gratuity for MD approval</button></div>' : ''}`, 'Contract staff and exits')}
+    ${card('Leave pay (unused annual leave)', `<div class="form">
+      <div class="field full"><label for="lp_emp">Employee</label><select id="lp_emp" data-change="lpcalc">${activeEmp().map(e => `<option value="${e.id}">${esc(nm(e))} · ${e.bal.Annual} days left</option>`).join('')}</select></div>
+      <div class="field"><label for="lp_days">Unused days to pay</label><input id="lp_days" type="number" min="0" data-change="lpcalc"></div>
+      <div class="field"><label for="lp_why">When</label><select id="lp_why"><option>On exit (final dues)</option><option>In service, per approved policy</option></select></div>
+      <div class="calc" id="lpout"></div></div>
+      ${hr ? '<div class="actions" style="margin-top:12px"><button class="btn primary" data-act="raiseLP">Raise leave pay for MD approval</button></div>' : ''}`, `Basic ÷ ${CONFIG.leaveDivisor} × days`)}
+  </div>
+  ${card('Gratuity accrued to date (contract staff)', table([{h:'Employee', f:e => person(e)}, {h:'Contract start', f:e => D(e.joined)}, {h:'Contract end', f:e => D(e.cEnd)}, {h:'Service (years)', r:1, f:e => gratuityFor(e).yrs.toFixed(2)}, {h:'Basic', r:1, f:e => N(e.basic)}, {h:'Accrued gratuity (UGX)', r:1, f:e => `<b>${N(gratuityFor(e).amt)}</b>`}], contract, {foot:`<td colspan="5">Provision to hold in the ledger</td><td class="r num">${N(contract.reduce((s, e) => s + gratuityFor(e).amt, 0))}</td>`}))}
+  <div class="note warn"><b>Check with legal and tax.</b> Gratuity terms come from each contract or the HR manual. Severance on termination and the tax treatment of gratuity follow the Employment Act and Income Tax Act; confirm the current rules before go-live.</div>`;
+  S.after = () => { A.gcalc(); A.lpcalc(); };
+  return page({crumb:'Pay', title:'Gratuity and leave pay', sub:'Calculations HR raises and the MD approves before they reach payroll.', body});
+};
+A.gcalc = () => { const e = emp($('#g_emp').value), b = $('#g_basis').value; if (A._gb !== b) { $('#g_rate').value = b === 'pct' ? CONFIG.gratuity.pct : CONFIG.gratuity.months; A._gb = b; }
+  const g = gratuityFor(e, b, +$('#g_rate').value); A._g = {e, g, b, rate:+$('#g_rate').value};
+  $('#gout').innerHTML = `${esc(nm(e))}: ${g.yrs.toFixed(2)} years of service × ${b === 'pct' ? `${$('#g_rate').value}% of annual basic (${N(e.basic * 12)})` : `${$('#g_rate').value} month(s) of basic (${N(e.basic)})`}<div style="font-family:var(--f-display);font-size:24px;font-weight:650;margin-top:4px">${UGX(g.amt)}</div>`; };
+A.lpcalc = () => { const e = emp($('#lp_emp').value); if (A._lpe !== e.id) { $('#lp_days').value = e.bal.Annual; A._lpe = e.id; } const d = +$('#lp_days').value || 0; A._lp = {e, d, amt:leavePay(e, d)};
+  $('#lpout').innerHTML = `${UGX(e.basic)} ÷ ${CONFIG.leaveDivisor} = ${UGX(e.basic / CONFIG.leaveDivisor)} a day × ${d} days<div style="font-family:var(--f-display);font-size:24px;font-weight:650;margin-top:4px">${UGX(A._lp.amt)}</div>`; };
+A.raiseGrat = () => { const {e, g, b, rate} = A._g; newReq({type:'Gratuity or leave pay', subject:`Gratuity for ${nm(e)}`, maker:USERS.hr.emp, fields:[['Employee', nm(e) + ', ' + e.type], ['Service', g.yrs.toFixed(2) + ' years'], ['Basis', b === 'pct' ? `${rate}% of annual basic per year` : `${rate} month(s) basic per year`], ['Amount', UGX(g.amt)], ['Pays through', 'October payroll input']], payload:{emp:e.id, kind:'Bonus', amt:g.amt, note:'Gratuity (MD approved)'}}); render(); toast('Gratuity sent to the MD'); };
+A.raiseLP = () => { const {e, d, amt} = A._lp; if (!d) return toast('Enter the number of days.'); newReq({type:'Gratuity or leave pay', subject:`Leave pay for ${nm(e)}, ${d} days`, maker:USERS.hr.emp, fields:[['Employee', nm(e)], ['Unused days', String(d)], ['Daily rate', UGX(e.basic / CONFIG.leaveDivisor)], ['Amount', UGX(amt)], ['When', $('#lp_why').value]], payload:{emp:e.id, kind:'Leave pay', amt, note:`${d} unused annual leave days`}}); render(); toast('Leave pay sent to the MD'); };
+
+/* ================= PAYROLL SETUP ================= */
+VIEWS.paysetup = () => {
+  const hr = S.role === 'hr';
+  const body = `<div class="note"><b>Setup changes are maker-checker too.</b> HR edits a rate or grade, the MD approves the new version, and it applies from the next payroll. Old versions stay for audit and re-runs.</div>
+  ${card('Employee grade setup and grade allowances', table([{h:'Grade', f:([k]) => `<b>${k}</b>`}, {h:'Name', f:([, g]) => g.name}, {h:'Transport', r:1, f:([, g]) => N(g.tr)}, {h:'Housing', r:1, f:([, g]) => N(g.hs)}, {h:'Airtime', r:1, f:([, g]) => N(g.at)}, {h:'Staff on grade', r:1, f:([k]) => activeEmp().filter(e => e.grade === k).length}], Object.entries(GRADES)))}
+  <div class="grid g2">
+    ${card('PAYE bands (resident, monthly)', table([{h:'Chargeable income up to', f:([c]) => c === Infinity ? 'Above 485,000' : N(c)}, {h:'Rate on the band', r:1, f:([, r]) => (r * 100) + '%'}], CONFIG.paye) + `<p class="muted" style="margin:8px 0 0;font-size:12.5px">Plus ${CONFIG.surtax * 100}% on chargeable income above ${N(CONFIG.surtaxOver)}. Effective 1 July 2026.</p>`)}
+    ${card('Local Service Tax bands', table([{h:'Monthly income up to', f:([c]) => c === Infinity ? 'Above 1,000,000' : N(c)}, {h:'Annual LST', r:1, f:([, a]) => N(a)}, {h:'Monthly (Jul to Oct)', r:1, f:([, a]) => N(a / 4)}], CONFIG.lst))}
+  </div>
+  <div class="grid g2">
+    ${card('Deduction setup', table([{h:'Deduction', f:x => x[0]}, {h:'Type', f:x => x[1]}, {h:'Rule', f:x => x[2]}], [['PAYE','Statutory','Bands above'], ['NSSF staff','Statutory','5% of gross'], ['NSSF employer','Statutory (cost)','10% of gross'], ['Local Service Tax','Statutory','Bands above, July to October'], ['Staff loan','Core banking','Instalment from loan schedule'], ['Savings','Core banking','Fixed amount from employee file'], ['Salary advance','HR input','Recovery plan, max 3 months'], ['Unpaid leave','Leave module','Basic ÷ ' + CONFIG.leaveDivisor + ' × days']]))}
+    ${card('Basic salary setup and employee positions', table([{h:'Position', f:x => esc(x[0])}, {h:'Grade', f:x => x[1]}, {h:'Holders', r:1, f:x => x[2]}], [...new Set(activeEmp().map(e => e.title))].map(t => [t, activeEmp().find(e => e.title === t).grade, activeEmp().filter(e => e.title === t).length])))}
+  </div>`;
+  return page({crumb:'Pay', title:'Payroll setup', sub:'Grades, allowances, deductions and statutory rates used by every payroll run.', actions:hr ? '<button class="btn" data-act="setupEdit">Propose a rate change</button>' : '', body});
+};
+A.setupEdit = () => formModal({title:'Propose a payroll setup change', flow:['hr','md'], fields:[{id:'item', label:'Item', type:'select', opts:['Grade allowance','Deduction rule','PAYE band','LST band','NSSF rate'], full:1}, {id:'change', label:'Change', type:'textarea', full:1, req:1, val:'G4 transport allowance from 200,000 to 220,000'}, {id:'eff', label:'Applies from payroll', type:'month', val:'2026-11'}],
+  onSubmit:v => { if (!v.change) return formError('Describe the change.'), false; newReq({type:'Payroll setup change', subject:v.item + ': ' + v.change.slice(0, 50), maker:USERS.hr.emp, fields:[['Item', v.item], ['Change', v.change], ['Applies from', v.eff]], payload:{}}); toast('Sent to the MD'); }});
+
+/* ================= DISCIPLINARY AND GRIEVANCE ================= */
+function caseCard(c) {
+  const st = CASE_STAGES[c.kind], i = st.indexOf(c.stage), hr = S.role === 'hr';
+  const pend = REQS.find(r => r.payload.case === c.id && r.status === 'pending');
+  const next = {Incident:'Add people involved', 'People involved':'Schedule hearing', Hearing:'Record hearing and propose decision', Lodged:'Start investigation', Investigation:'Schedule meeting', Meeting:'Propose resolution'}[c.stage];
+  return `<section class="card"><h3><span>${c.id} · ${esc(c.category)}</span>${pill(c.kind, c.kind === 'Grievance' ? 'info' : 'warn')}</h3>
+    <div class="flow" style="--n:${st.length}">${st.map((s, k) => `<div class="step ${k < i || c.stage === 'Closed' ? 'done' : k === i ? 'cur' : ''}"><div class="dotc">${k < i || c.stage === 'Closed' ? '✓' : k + 1}</div><div class="sl">${s}</div></div>`).join('')}</div>
+    <dl class="kv" style="margin-top:12px"><dt>${c.kind === 'Grievance' ? 'Raised by' : 'Employee'}</dt><dd>${esc(nm(emp(c.emp)))}, ${esc(emp(c.emp).title)}</dd><dt>Incident date</dt><dd>${D(c.incident)}</dd><dt>Details</dt><dd>${esc(c.desc)}</dd>
+    <dt>People involved</dt><dd>${c.involved.map(x => esc(nm(emp(x)))).join(', ')}${c.witnesses.length ? ' · Witnesses: ' + c.witnesses.map(x => esc(nm(emp(x)))).join(', ') : ''}</dd>
+    ${c.hearing ? `<dt>Hearing</dt><dd>${D(c.hearing.date)} · Panel: ${c.hearing.panel.map(x => esc(nm(emp(x)))).join(', ')}${c.hearing.minutes ? `<div class="muted">${esc(c.hearing.minutes)}</div>` : ''}</dd>` : ''}
+    <dt>Decision</dt><dd>${c.decision ? `<b>${esc(c.decision)}</b>` : pend ? reqStatus(pend) : '<span class="faint">Not yet</span>'}</dd></dl>
+    ${hr && c.stage !== 'Closed' && !pend && next ? `<div class="actions" style="margin-top:12px"><button class="btn primary" data-act="caseNext" data-id="${c.id}">${next}</button></div>` : ''}
+    ${pend ? `<div class="actions" style="margin-top:12px"><button class="btn" data-act="open" data-id="${pend.id}">View ${pend.id}</button></div>` : ''}</section>`;
+}
+VIEWS.cases = () => {
+  const tab = curTab('cs', 'Disciplinary');
+  const list = CASES.filter(c => c.kind === tab);
+  const body = tabs('cs', [['Disciplinary', 'Disciplinary cases'], ['Grievance', 'Grievances']]) + `<div class="note"><b>${tab === 'Disciplinary' ? 'Flow: incident → people involved → hearing → decision.' : 'Flow: lodged → investigation → meeting → resolution.'}</b> HR runs each stage. The decision or resolution goes to the MD before letters are issued. Letters are filed automatically under the employee's documents.</div>`
+    + `<div class="grid g2">${list.map(caseCard).join('') || '<div class="empty">No cases.</div>'}</div>`;
+  return page({crumb:'Relations', title:'Disciplinary and grievance management', sub:'Incidents, people involved, hearings and decisions in one record.', actions:S.role === 'hr' ? '<button class="btn primary" data-act="newCase">Open a case</button>' : '', body});
+};
+A.newCase = el => { const pre = el && el.dataset.id;
+  formModal({title:'Open a disciplinary case', submit:'Open case', fields:[{id:'emp', label:'Employee', type:'select', opts:activeEmp().map(e => [e.id, nm(e)]), val:pre, full:1}, {id:'cat', label:'Category', type:'select', opts:['Absenteeism and late reporting','Cash shortage','Breach of customer confidentiality','Fraud or dishonesty','Insubordination','Misuse of company property','Other misconduct']}, {id:'date', label:'Incident date', type:'date', val:ISO(TODAY)}, {id:'by', label:'Reported by', type:'select', opts:activeEmp().map(e => [e.id, nm(e)]), val:USERS.hr.emp}, {id:'desc', label:'What happened', type:'textarea', full:1, req:1}, {id:'ev', label:'Evidence', type:'file', full:1}],
+    onSubmit:v => { if (!v.desc) return formError('Describe the incident.'), false; const id = 'DC-' + String(13 + CASES.filter(c => c.kind === 'Disciplinary').length).padStart(3, '0');
+      CASES.unshift({id, kind:'Disciplinary', emp:v.emp, category:v.cat, incident:v.date, reportedBy:v.by, involved:[v.emp], witnesses:[], desc:v.desc, stage:'Incident', hearing:null, decision:null, due:ISO(new Date(TODAY.getTime() + 7 * 864e5))}); audit('Opened case', id, v.cat); S.tab.cs = 'Disciplinary'; S.view = 'cases'; toast(`${id} opened`); }}); };
+A.caseNext = el => { const c = CASES.find(x => x.id === el.dataset.id), people = activeEmp().map(e => [e.id, nm(e)]);
+  if (c.stage === 'Incident' || c.stage === 'Lodged') return formModal({title:c.stage === 'Incident' ? 'People involved' : 'Start investigation', submit:'Save and continue', fields:[{id:'w1', label:'Witness', type:'select', opts:[['', 'None'], ...people]}, {id:'w2', label:'Second witness', type:'select', opts:[['', 'None'], ...people]}, {id:'note', label:'Notes', type:'textarea', full:1}],
+    onSubmit:v => { c.witnesses = [v.w1, v.w2].filter(Boolean); c.stage = c.kind === 'Disciplinary' ? 'People involved' : 'Investigation'; audit('Updated case', c.id, c.stage); }});
+  if (c.stage === 'People involved' || c.stage === 'Investigation') return formModal({title:c.kind === 'Disciplinary' ? 'Schedule hearing' : 'Schedule meeting', submit:'Schedule and notify', fields:[{id:'date', label:'Date', type:'date', val:ISO(new Date(TODAY.getTime() + 5 * 864e5))}, {id:'p1', label:'Panel member', type:'select', opts:people, val:USERS.hr.emp}, {id:'p2', label:'Panel member', type:'select', opts:people, val:'PSF-0071'}, {id:'notice', label:'Notice', type:'select', opts:['Show-cause letter sent with hearing notice (at least 3 working days)','Meeting invitation sent'], full:1}],
+    onSubmit:v => { c.hearing = {date:v.date, panel:[v.p1, v.p2], minutes:''}; c.stage = c.kind === 'Disciplinary' ? 'Hearing' : 'Meeting'; c.due = v.date; notify(c.emp, `${c.kind === 'Disciplinary' ? 'Hearing' : 'Meeting'} for ${c.id} on ${D(v.date)}`); audit('Scheduled hearing', c.id, D(v.date)); toast('Scheduled. Employee notified by email and SMS.'); }});
+  const opts = c.kind === 'Disciplinary' ? ['Exonerated','Verbal warning','Written warning (6 months)','Final written warning (12 months)','Suspension without pay (5 days)','Dismissal'] : ['Upheld: pay overtime arrears','Partly upheld','Not upheld','Referred to mediation'];
+  formModal({title:c.kind === 'Disciplinary' ? 'Hearing outcome and proposed decision' : 'Proposed resolution', flow:['hr','md'], fields:[{id:'min', label:'Minutes / findings', type:'textarea', full:1, req:1}, {id:'dec', label:'Proposed decision', type:'select', opts, full:1}, {id:'att', label:'Signed minutes', type:'file', full:1}],
+    onSubmit:v => { if (!v.min) return formError('Record the minutes or findings.'), false; if (c.hearing) c.hearing.minutes = v.min; c.stage = c.kind === 'Disciplinary' ? 'Decision' : 'Resolution';
+      newReq({type:c.kind === 'Disciplinary' ? 'Disciplinary decision' : 'Grievance resolution', subject:`${c.id}: ${v.dec}`, maker:USERS.hr.emp, note:v.min, fields:[['Case', `${c.id} · ${c.category}`], ['Employee', nm(emp(c.emp))], ['Findings', v.min], ['Proposed decision', v.dec]], payload:{case:c.id, decision:v.dec}}); toast('Decision sent to the MD'); }});
+};
+/* staff grievance */
+VIEWS.grievance = () => page({crumb:'Growth and support', title:'Raise a grievance', sub:'Your grievance goes to HR first. You can mark it confidential.', actions:'<button class="btn primary" data-act="newGriev">Raise a grievance</button>',
+  body:card('My grievances', table([{h:'Ref', f:c => c.id}, {h:'Category', f:c => esc(c.category)}, {h:'Raised', f:c => D(c.incident)}, {h:'Stage', f:c => pill(c.stage, c.stage === 'Closed' ? 'ok' : 'gold')}, {h:'Resolution', f:c => esc(c.decision || 'Pending')}], CASES.filter(c => c.kind === 'Grievance' && c.emp === USERS.staff.emp), {empty:'You have not raised any grievance.'})) + card('How it is handled', flowHtml(['staff','hr','md']))});
+A.newGriev = () => formModal({title:'Raise a grievance', submit:'Send to HR', flow:['staff','hr','md'], fields:[{id:'cat', label:'Category', type:'select', opts:['Pay and overtime','Working conditions','Supervisor or colleague conduct','Harassment','Discrimination','Other']}, {id:'conf', label:'Confidential', type:'select', opts:['No','Yes, HR and MD only']}, {id:'desc', label:'What happened', type:'textarea', full:1, req:1}, {id:'att', label:'Supporting documents', type:'file', full:1}],
+  onSubmit:v => { if (!v.desc) return formError('Describe your grievance.'), false; const id = 'GR-' + String(6 + CASES.filter(c => c.kind === 'Grievance').length).padStart(3, '0'); CASES.unshift({id, kind:'Grievance', emp:USERS.staff.emp, category:v.cat, incident:ISO(TODAY), reportedBy:USERS.staff.emp, involved:[USERS.staff.emp], witnesses:[], desc:v.desc, stage:'Lodged', hearing:null, decision:null, due:ISO(new Date(TODAY.getTime() + 5 * 864e5)), confidential:v.conf !== 'No'}); notify('hr', `New grievance ${id} from ${nm(me())}`); audit('Raised grievance', id, v.cat); toast(`${id} sent to HR`); }});
+
+/* ================= EXIT MANAGEMENT ================= */
+function finalDues(x) { const e = emp(x.emp); const pro = x.lwd ? Math.round(e.basic * (+x.lwd.slice(8, 10)) / new Date(+x.lwd.slice(0, 4), +x.lwd.slice(5, 7), 0).getDate()) : 0;
+  const lp = leavePay(e, e.bal.Annual), gr = e.type === 'Contract' ? gratuityFor(e).amt : 0; return {pro, lp, gr, total:pro + lp + gr}; }
+function exitCard(x) {
+  const e = emp(x.emp), items = Object.entries(x.clear), done = items.filter(i => i[1]).length, hr = S.role === 'hr', fd = finalDues(x);
+  return `<section class="card"><h3><span>${x.id} · ${esc(nm(e))}</span>${pill(x.status, x.status === 'Completed' ? 'ok' : 'gold')}</h3>
+  <dl class="kv"><dt>Exit type</dt><dd>${esc(x.type)}</dd><dt>Notice given</dt><dd>${D(x.notice)}</dd><dt>Last working day</dt><dd>${D(x.lwd)}</dd><dt>Reason</dt><dd>${esc(x.reason)}</dd><dt>Exit interview</dt><dd>${esc(x.interview || 'Not yet done')}</dd></dl>
+  <div style="margin:12px 0 4px;display:flex;justify-content:space-between"><b>Clearance</b><span class="muted">${done} of ${items.length}</span></div>
+  <div class="bar-track" style="margin-bottom:8px"><span class="bar-fill" style="width:${done / items.length * 100}%"></span></div>
+  ${items.map(([k, v]) => `<label class="check"><input type="checkbox" ${v ? 'checked' : ''} ${hr && x.status !== 'Completed' ? `data-change="clr" data-id="${x.id}" data-k="${esc(k)}"` : 'disabled'}> ${esc(k)}</label>`).join('')}
+  ${x.status !== 'Completed' ? `<div class="calc" style="margin-top:10px">Final dues: pro-rata salary ${N(fd.pro)} + leave pay ${N(fd.lp)} (${e.bal.Annual} days)${fd.gr ? ' + gratuity ' + N(fd.gr) : ''} = <b>${UGX(fd.total)}</b> before PAYE and NSSF. Staff loan balance is settled from core banking first.</div>` : ''}
+  ${hr && x.status !== 'Completed' ? `<div class="actions" style="margin-top:12px"><button class="btn" data-act="revoke" data-id="${x.id}">Disable access in connected systems</button><button class="btn primary" data-act="dues" data-id="${x.id}">Send final dues to MD</button></div>` : ''}</section>`;
+}
+VIEWS.exits = () => page({crumb:'Relations', title:'Exit management', sub:'Records about each exit: notice, clearance, final dues and exit interview.', actions:S.role === 'hr' ? '<button class="btn primary" data-act="startExit">Start an exit</button>' : '',
+  body:`<div class="grid g2">${EXITS.map(exitCard).join('') || '<div class="empty">No exits recorded.</div>'}</div>`});
+A.clr = el => { const x = EXITS.find(y => y.id === el.dataset.id); x.clear[el.dataset.k] = el.checked ? 1 : 0; audit('Updated clearance', x.id, el.dataset.k); render(); };
+A.revoke = el => { const x = EXITS.find(y => y.id === el.dataset.id); ['Core banking user disabled','PlusPay user disabled','Email account closed'].forEach(k => x.clear[k] = 1); audit('Disabled system access', x.id, 'Core banking, PlusPay, email'); render(); toast('Core banking, PlusPay and email access disabled'); };
+A.dues = el => { const x = EXITS.find(y => y.id === el.dataset.id), e = emp(x.emp), fd = finalDues(x);
+  if (Object.values(x.clear).filter(v => !v).length > 2) return toast('Finish clearance first. More than 2 items are still open.');
+  newReq({type:'Final dues', subject:`${nm(e)}: final dues ${UGX(fd.total)}`, maker:USERS.hr.emp, fields:[['Employee', nm(e)], ['Exit type', x.type], ['Last working day', D(x.lwd)], ['Pro-rata salary', UGX(fd.pro)], ['Leave pay', UGX(fd.lp)], ['Gratuity', UGX(fd.gr)], ['Total before tax', UGX(fd.total)]], payload:{exit:x.id}}); render(); toast('Final dues sent to the MD'); };
+EFFECTS['Final dues'] = r => { const x = EXITS.find(y => y.id === r.payload.exit); x.status = 'Completed'; Object.keys(x.clear).forEach(k => x.clear[k] = 1); const e = emp(x.emp); e.status = x.type === 'Dismissal' ? 'Terminated' : 'Resigned'; e.docs['Exit documents'] = 1; };
+A.startExit = el => { const pre = el && el.dataset.id;
+  formModal({title:'Start an exit', submit:'Create exit record', fields:[{id:'emp', label:'Employee', type:'select', opts:activeEmp().map(e => [e.id, nm(e)]), val:pre, full:1}, {id:'type', label:'Exit type', type:'select', opts:['Resignation','End of contract','Retirement','Redundancy','Dismissal','Death in service'], val:el && el.dataset.t}, {id:'notice', label:'Notice date', type:'date', val:ISO(TODAY)}, {id:'lwd', label:'Last working day', type:'date', req:1}, {id:'reason', label:'Reason', full:1, req:1}],
+    onSubmit:v => { if (!v.lwd || !v.reason) return formError('Enter the last working day and reason.'), false; EXITS.unshift({id:'EX-' + (8 + EXITS.length), emp:v.emp, type:v.type, notice:v.notice, lwd:v.lwd, reason:v.reason, interview:'', status:'Clearance in progress', clear:clearList()}); audit('Started exit', v.emp, v.type); S.view = 'exits'; toast('Exit record created. Clearance checklist started.'); }}); };
+/* staff resignation */
+VIEWS.resign = () => { const mine = REQS.filter(r => r.type === 'Resignation' && r.maker === USERS.staff.emp);
+  return page({crumb:'Growth and support', title:'Resignation', sub:'Give notice in writing through the system. HR runs clearance and the MD approves your final dues.', actions:'<button class="btn danger" data-act="resignForm">Submit resignation</button>',
+    body:card('What happens next', `<div class="toolbar">${['You submit notice','HR confirms notice period and starts clearance','MD approves','Final dues paid with leave pay','Certificate of service issued'].map((s, i, a) => `<div class="stage-card"><b>${i + 1}</b> ${s}</div>${i < a.length - 1 ? '<span class="arrow">→</span>' : ''}`).join('')}</div>`) + (mine.length ? table([{h:'Ref', f:r => r.id}, {h:'Request', f:r => esc(r.subject)}, {h:'Stage', f:r => reqStatus(r)}], mine, {click:r => `data-act="open" data-id="${r.id}"`}) : '')}); };
+A.resignForm = () => { const e = me(); formModal({title:'Submit resignation', flow:['staff','hr','md'], fields:[{id:'lwd', label:'Proposed last working day', type:'date', req:1, val:'2026-11-30'}, {id:'reason', label:'Reason', type:'select', opts:['Further studies','New job','Relocation','Personal or family','Health','Other']}, {id:'letter', label:'Resignation letter', type:'file', full:1}, {id:'note', label:'Anything HR should know', type:'textarea', full:1}, {type:'calc', val:`Notice period for your service (${tenure(e).toFixed(1)} years): at least ${tenure(e) < 1 ? '2 weeks' : tenure(e) < 5 ? '1 month' : '2 months'}, as in the HR manual.`}],
+  onSubmit:v => { if (!v.lwd) return formError('Choose your last working day.'), false; newReq({type:'Resignation', subject:`${nm(e)}: last day ${D(v.lwd)}`, maker:e.id, note:v.note, fields:[['Employee', nm(e) + ', ' + e.title], ['Last working day', D(v.lwd)], ['Reason', v.reason], ['Letter', v.letter || 'Not attached']], payload:{emp:e.id, lwd:v.lwd, reason:v.reason}}); toast('Resignation sent to HR'); }}); };
+
+/* ================= HR LIBRARY ================= */
+VIEWS.library = () => {
+  const staff = S.role === 'staff', total = activeEmp().length;
+  const acked = S.acked || (S.acked = new Set());
+  const body = `<div class="note"><b>One place for HR documents.</b> HR manual, code of conduct, leave policy and every other policy, with version history. Staff confirm they have read each policy; HR sees who has not.</div>`
+    + table([{h:'Document', f:d => `<b>${esc(d.title)}</b>`}, {h:'Category', f:d => pill(d.cat, 'brand')}, {h:'Version', f:d => `<span class="mono">v${d.ver}</span>`}, {h:'Owner', f:d => esc(d.owner)}, {h:'Approved by MD', f:d => D(d.approved)},
+      {h:staff ? 'My status' : 'Read and acknowledged', f:d => d.ack == null ? '<span class="faint">Form or template</span>' : staff ? (acked.has(d.id) ? pill('Acknowledged', 'ok') : `<button class="btn sm" data-act="ack" data-id="${d.id}">I have read this</button>`) : `${d.ack} of ${total} ${d.ack < total ? pill((total - d.ack) + ' pending', 'warn') : pill('All', 'ok')}`}], LIBRARY);
+  return page({crumb:'Resources', title:'HR library', sub:'Policies, manuals, procedures, forms and templates.', actions:S.role === 'hr' ? '<button class="btn primary" data-act="upDoc">Upload document</button>' : '', body});
+};
+A.ack = el => { S.acked.add(el.dataset.id); const d = LIBRARY.find(x => x.id === el.dataset.id); d.ack = Math.min(activeEmp().length, (d.ack || 0) + 1); audit('Acknowledged policy', d.id, d.title); render(); toast('Thanks. Your acknowledgement is recorded.'); };
+A.upDoc = () => formModal({title:'Upload to HR library', flow:['hr','md'], fields:[{id:'title', label:'Title', req:1, full:1}, {id:'cat', label:'Category', type:'select', opts:['Policy','Manual','Procedure','Handbook','Form','Template']}, {id:'ver', label:'Version', val:'1.0'}, {id:'file', label:'File (PDF or Word)', type:'file', full:1}, {id:'ackreq', label:'Staff must acknowledge', type:'select', opts:['Yes','No']}],
+  onSubmit:v => { if (!v.title) return formError('Enter a title.'), false; newReq({type:'HR Library document', subject:`${v.title} v${v.ver}`, maker:USERS.hr.emp, fields:[['Title', v.title], ['Category', v.cat], ['Version', v.ver], ['File', v.file || 'Not attached'], ['Acknowledgement', v.ackreq]], payload:{title:v.title, cat:v.cat, ver:v.ver}}); toast('Sent to the MD. It publishes once approved.'); }});
+
+/* ================= HR REPORTS ================= */
+const REPORTS = {
+  'Headcount by branch, department and type':() => [['Branch','Department','Type','Staff'], ...BRANCHES.flatMap(b => DEPTS.flatMap(d => TYPES.map(t => [b, d, t, activeEmp().filter(e => e.branch === b && e.dept === d && e.type === t).length]))).filter(r => r[3])],
+  'Staff master list':() => [['ID','Name','Gender','Job title','Department','Branch','Type','Joined','Status'], ...EMP.map(e => [e.id, nm(e), e.g, e.title, e.dept, e.branch, e.type, e.joined, e.status])],
+  'Leave taken and balances':() => [['Employee','Annual left','Sick left','Leave taken (days)'], ...activeEmp().map(e => [nm(e), e.bal.Annual, e.bal.Sick, LEAVES.filter(l => l.emp === e.id).reduce((s, l) => s + l.days, 0)])],
+  'Attendance today':() => [['Employee','Branch','Clock in','Status'], ...activeEmp().map(e => { const a = ATT[e.id]; return [nm(e), e.branch, a ? a[0] : '', a ? (a[0] > SHIFT_START ? 'Late' : 'Present') : e.status === 'On Leave' ? 'On leave' : 'Absent']; })],
+  'Contract and probation expiry':() => [['Employee','Type','Ends','Days left'], ...activeEmp().filter(e => e.cEnd || e.pEnd).map(e => [nm(e), e.type, e.cEnd || e.pEnd, fromToday(e.cEnd || e.pEnd)])],
+  'Appraisal status':() => [['Employee','Cycle','Due','Status','Score'], ...APPRAISALS.map(a => [nm(emp(a.emp)), a.cycle, a.due, a.status, a.score ?? ''])],
+  'Training attendance':() => [['Training','Date','Status','Attended'], ...TRAININGS.map(t => [t.title, t.date, t.status, t.done.length])],
+  'Transfers, promotions and salary changes':() => [['Employee','Change','Previous','New','Effective','Reason'], ...EMP.flatMap(e => e.movements.map(m => [nm(e), m.kind, m.prev, m.next, m.date, m.reason]))],
+  'Disciplinary and grievance register':() => [['Case','Type','Employee','Category','Stage','Decision'], ...CASES.map(c => [c.id, c.kind, nm(emp(c.emp)), c.category, c.stage, c.decision || ''])],
+  'Exits and staff turnover':() => [['Employee','Exit type','Last day','Reason','Status'], ...EXITS.map(x => [nm(emp(x.emp)), x.type, x.lwd, x.reason, x.status]), ['Turnover (last 12 months)', '', '', `${(EXITS.length / EMP.length * 100).toFixed(1)}% of headcount`, '']],
+  'Payroll summary (October 2026)':() => { const r = payRegister(); return [['Employee','Gross','PAYE','NSSF 5%','LST','Net'], ...r.lines.map(l => [nm(l.e), l.gross, l.paye, l.nssfEe, l.lst, l.net])]; },
+  'Statutory returns (PAYE, NSSF, LST)':() => { const t = payRegister().tot; return [['Return','Authority','Amount'], ['PAYE','URA',t.paye], ['NSSF 15%','NSSF',t.nssfEe + t.nssfEr], ['LST','Local government',t.lst]]; },
+  'Gratuity provision':() => [['Employee','Service years','Accrued'], ...activeEmp().filter(e => e.type === 'Contract').map(e => [nm(e), gratuityFor(e).yrs, gratuityFor(e).amt])],
+  'Approvals turnaround':() => [['Ref','Type','Status','Steps'], ...REQS.map(r => [r.id, r.type, r.status, r.hist.length])]
+};
+VIEWS.reports = () => page({crumb:'Resources', title:'HR reports', sub:'Every dashboard figure has a report behind it. Open one to preview, then copy it as CSV or export from the live system to Excel or PDF.',
+  body:`<div class="grid g3">${Object.keys(REPORTS).map(k => `<button class="kpi" data-act="report" data-k="${esc(k)}"><span class="l">Report</span><span style="font-weight:600;font-size:14.5px">${esc(k)}</span><span class="d">${REPORTS[k]().length - 1} rows</span></button>`).join('')}</div>`});
+A.report = el => { const k = el.dataset.k, rows = REPORTS[k](); S.lastReport = rows;
+  openDrawer(`${ovHead(k, 'Preview · sample data')}<div class="ov-body"><div class="actions"><button class="btn primary" data-act="copyCsv">Copy as CSV</button><button class="btn" data-act="exportNote">Excel</button><button class="btn" data-act="exportNote">PDF</button></div>
+  <div class="tw"><table><thead><tr>${rows[0].map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.slice(1).map(r => `<tr>${r.map(c => `<td class="${typeof c === 'number' ? 'r num' : ''}">${typeof c === 'number' && c > 999 ? N(c) : esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`); };
+A.copyCsv = () => { const csv = S.lastReport.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  try { navigator.clipboard.writeText(csv).then(() => toast('CSV copied. Paste into Excel or Google Sheets.'), () => toast('Copy blocked here. Select the table and copy it instead.')); } catch (e) { toast('Copy blocked here. Select the table and copy it instead.'); } };
+A.exportNote = () => toast('Excel and PDF export run on the live system. Use Copy as CSV in this prototype.');
+
+/* ================= ROLES AND PERMISSIONS ================= */
+VIEWS.roles = () => {
+  const role = S.roleSel || (S.roleSel = 'HR Manager');
+  if (!S.permDraft || S.permDraft.role !== role) S.permDraft = {role, p:new Set(ROLE_PERMS[role].p), a:new Set(ROLE_PERMS[role].a)};
+  const d = S.permDraft, q = (S.permQ || '').toUpperCase(), all = Object.values(PERMS).flat();
+  const conflict = d.a.has('Initiate') && d.a.has('Approve');
+  const body = `<div class="grid" style="grid-template-columns:minmax(0,240px) minmax(0,1fr)">
+    <section class="card"><h3>Roles</h3><div class="list">${Object.keys(ROLE_PERMS).map(r => `<button class="nav-item" style="color:var(--ink);${r === role ? 'background:var(--brand-soft);font-weight:700' : ''}" data-act="pickRole" data-r="${esc(r)}">${esc(r)}<span class="badge" style="background:var(--surface-2);color:var(--muted)">${ROLE_PERMS[r].p.length}</span></button>`).join('')}</div>
+      <p class="muted" style="font-size:12px;margin:10px 0 0">Users get one role. Changes to a role go to the MD before they apply.</p></section>
+    <section class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <label class="cb"><input type="checkbox" data-change="permAll" ${d.p.size === all.length ? 'checked' : ''}> Select all permissions</label>
+        <div class="field" style="min-width:220px"><label for="copyFrom">Copy permission from</label><select id="copyFrom" data-change="permCopy"><option value="">Choose a role</option>${Object.keys(ROLE_PERMS).filter(r => r !== role).map(r => `<option>${esc(r)}</option>`).join('')}</select></div></div>
+      <label class="search" for="permQ"><input id="permQ" placeholder="Search" value="${esc(S.permQ || '')}" data-change="permSearch"></label>
+      ${Object.entries(PERMS).map(([g, list]) => { const vis = list.filter(p => !q || p.includes(q)); return vis.length ? `<div class="perm-mod"><h5>${esc(g)}</h5><div class="perm-grid">${vis.map(p => `<label class="cb"><input type="checkbox" data-change="permTog" data-p="${esc(p)}" ${d.p.has(p) ? 'checked' : ''}> ${esc(p)}</label>`).join('')}</div></div>` : ''; }).join('')}
+      <div><h3 style="margin-bottom:2px">Authorisation privileges</h3><div class="muted" style="font-size:12.5px;margin-bottom:8px">Please select all that apply</div>
+        <div class="perm-grid">${PRIVS.map(p => `<label class="cb lc"><input type="checkbox" data-change="privTog" data-p="${esc(p)}" ${d.a.has(p) ? 'checked' : ''}> ${esc(p)}</label>`).join('')}<label class="cb lc" title="Never allowed"><input type="checkbox" disabled> Approve own requests (blocked for every role)</label></div></div>
+      ${conflict ? `<div class="note crit"><b>Conflict.</b> This role can both initiate and approve. The system will block saving: one person cannot be maker and checker on the same item.</div>` : ''}
+      <div class="actions"><button class="btn primary" data-act="savePerms" ${conflict ? 'disabled' : ''}>Save changes for MD approval</button><button class="btn" data-act="pickRole" data-r="${esc(role)}">Discard changes</button></div>
+    </section></div>
+    <div class="note warn"><b>Fixing today's risk.</b> In the current back-office screen one user can tick BASIC SALARY SETUP, EMPLOYEE SALARY, ADJUST SALARY ITEM and RUN PAYROLL together with CUSTOMER INFO. Here, payroll setup and payroll runs need an Initiate role and a separate Approve role, and banking permissions (customer info, loan schedule, deal certificates, directors' mandates) stay in core banking.</div>`;
+  return page({crumb:'Administration', title:'Roles and permissions', sub:'Who can see and do what. Built on the same checkbox pattern your team already uses.', body});
+};
+A.pickRole = el => { S.roleSel = el.dataset.r; S.permDraft = null; render(); };
+A.permTog = el => { const d = S.permDraft; el.checked ? d.p.add(el.dataset.p) : d.p.delete(el.dataset.p); render(); };
+A.privTog = el => { const d = S.permDraft; el.checked ? d.a.add(el.dataset.p) : d.a.delete(el.dataset.p); render(); };
+A.permAll = el => { S.permDraft.p = el.checked ? new Set(Object.values(PERMS).flat()) : new Set(); render(); };
+A.permCopy = el => { if (!el.value) return; S.permDraft.p = new Set(ROLE_PERMS[el.value].p); toast(`Copied ${ROLE_PERMS[el.value].p.length} permissions from ${el.value}`); render(); };
+A.permSearch = el => { S.permQ = el.value; render(); };
+A.savePerms = () => { const d = S.permDraft, old = ROLE_PERMS[d.role]; const add = [...d.p].filter(p => !old.p.includes(p)), rem = old.p.filter(p => !d.p.has(p));
+  if (!add.length && !rem.length && [...d.a].sort().join() === [...old.a].sort().join()) return toast('No changes to save.');
+  newReq({type:'Role permission change', subject:`${d.role}: ${add.length} added, ${rem.length} removed`, maker:USERS[S.role].emp, fields:[['Role', d.role], ['Added', add.join(', ') || 'None'], ['Removed', rem.join(', ') || 'None'], ['Privileges', [...d.a].join(', ')]], payload:{role:d.role, p:[...d.p], a:[...d.a]}}); render(); toast('Sent to the MD for approval'); };
+EFFECTS['Role permission change'] = r => { ROLE_PERMS[r.payload.role] = {p:r.payload.p, a:r.payload.a}; };
+
+/* ================= APPROVAL WORKFLOW ================= */
+VIEWS.workflow = () => page({crumb:'Administration', title:'Approval workflow', sub:'Maker-checker routes for every request type.',
+  body:table([{h:'Request type', f:w => `<b>${esc(w[0])}</b>`}, {h:'Maker', f:w => pill(w[1], w[1] === 'Staff' ? 'info' : 'brand')}, {h:'Checker (HR)', f:w => w[2] ? esc(w[2]) : '<span class="faint">HR is the maker</span>'}, {h:'Final approver', f:w => esc(w[3])}, {h:'Route', f:w => (w[1] === 'Staff' ? 'Staff → HR → MD' : 'HR → MD')}], WORKFLOWS)
+   + `<div class="grid g2">${card('Rules every route follows', `<div class="list">${[['No self-approval','A maker can never check or approve their own request. HR\'s own requests go straight to the MD; the MD\'s own requests go to HR and are reported to the Board.'], ['Return or reject needs a reason','The comment is shown to the maker and kept in history.'], ['MD returns to HR','An MD return goes back to HR, who can fix it or send it back to staff.'], ['Time limits','HR has ' + CONFIG.sla.hr + 'h and MD ' + CONFIG.sla.md + 'h. Reminders at half time; overdue items are flagged in red on both dashboards.'], ['Delegation','When the MD is away, the MD names an acting approver with start and end dates. Every action shows "on behalf of".'], ['Audit','Every submit, verify, approve, return, reject and edit is logged with user, time, device and old and new values.']].map(([t, s]) => `<div class="li"><div class="grow"><div class="t">${t}</div><div class="s">${s}</div></div></div>`).join('')}</div>`)}
+   ${card('Delegation of approval', `<div class="form"><div class="field"><label for="dg_who">Acting approver</label><select id="dg_who">${activeEmp().filter(e => ['G2'].includes(e.grade) && e.id !== USERS.hr.emp).map(e => `<option>${esc(nm(e))}, ${esc(e.title)}</option>`).join('')}</select></div><div class="field"><label for="dg_from">From</label><input type="date" id="dg_from" value="2026-11-16"></div><div class="field"><label for="dg_to">To</label><input type="date" id="dg_to" value="2026-11-20"></div><div class="field"><label for="dg_sc">Scope</label><select id="dg_sc"><option>All HR approvals except payroll</option><option>All HR approvals</option></select></div></div><div class="actions" style="margin-top:12px"><button class="btn" data-act="delegate">Save delegation</button></div>`, 'Set by the MD')}</div>`});
+A.delegate = () => { audit('Set delegation', 'MD', `${$('#dg_who').value} ${$('#dg_from').value} to ${$('#dg_to').value}`); toast('Delegation saved and logged'); };
+
+/* ================= CONNECTED SYSTEMS ================= */
+VIEWS.systems = () => page({crumb:'Administration', title:'Connected systems', sub:'How the HR system shares data with PlusSave\'s other systems so nobody types the same thing twice.',
+  body:`<div class="note"><b>One employee record, many systems.</b> When the MD approves a new hire, the HR system asks core banking and PlusPay to create the user. When an exit is approved, it disables both on the last working day. Payroll pulls staff loan instalments from core banking and posts net pay back.</div>
+  <div class="grid g3">${SYSTEMS.map(s => `<div class="sysbox"><div class="hd"><span>${esc(s.name)}</span>${s.state === 'ok' ? pill('Connected', 'ok') : pill('File export', 'warn')}</div><ul>${s.flows.map(f => `<li>${esc(f)}</li>`).join('')}</ul></div>`).join('')}</div>`});
+
+/* ================= AUDIT ================= */
+VIEWS.audit = () => { const f = S.auditRole || '';
+  return page({crumb:'Administration', title:'Audit trail', sub:'Read-only log of every action. Nobody can edit or delete entries, including system admins.',
+    body:`<div class="toolbar"><select data-change="auditRole" aria-label="Filter by role"><option value="">All roles</option>${['staff','hr','md'].map(r => `<option value="${r}" ${r === f ? 'selected' : ''}>${ROLE_NAME[r]}</option>`).join('')}</select></div>`
+      + table([{h:'Time', f:a => DT(a.at)}, {h:'User', f:a => person(emp(a.by), ROLE_NAME[a.role])}, {h:'Action', f:a => `<b>${esc(a.action)}</b>`}, {h:'Reference', f:a => `<span class="mono">${esc(a.ref)}</span>`}, {h:'Detail', f:a => esc(a.detail)}], AUDIT.filter(a => !f || a.role === f))}); };
+A.auditRole = el => { S.auditRole = el.value; render(); };
+
+/* ================= LOGOS AND BRANDING ================= */
+VIEWS.brand = () => page({crumb:'Administration', title:'Logos and branding', sub:'The PlusSave Financial Solutions logo heads every menu. Upload the official file to replace the placeholder.',
+  body:`<div class="grid">${[['ps','PlusSave Financial Solutions']].map(([k, l]) => card(l + ' logo', `<div style="display:flex;flex-direction:column;gap:12px">${S.logos[k] ? `<img src="${S.logos[k]}" alt="${l}" style="max-height:80px;width:auto;align-self:flex-start">` : `<div class="note warn">Showing the placeholder mark. Upload a PNG or SVG with a transparent background.</div>`}
+    <div class="actions"><label class="btn primary" for="lg_${k}">Upload logo</label><input type="file" id="lg_${k}" accept="image/*" hidden data-change="logoUp" data-k="${k}">${S.logos[k] ? `<button class="btn" data-act="logoReset" data-k="${k}">Use placeholder</button>` : ''}</div></div>`)).join('')}</div>
+    ${card('Preview', logos())}<div class="note">In this prototype, uploaded logos last for this session. In the live system they are stored in settings and also printed on payslips, letters and reports.</div>`});
+A.logoUp = el => { const f = el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { S.logos[el.dataset.k] = r.result; render(); toast('Logo updated on every menu'); }; r.readAsDataURL(f); };
+A.logoReset = el => { S.logos[el.dataset.k] = null; render(); };
+
+/* ================= STAFF SELF-SERVICE ================= */
+VIEWS.home = () => {
+  const e = me(), mine = REQS.filter(r => r.maker === e.id), ret = mine.filter(r => r.status === 'returned'), l = payLine(e, PAY.inputs, PAY.period);
+  const trains = TRAININGS.filter(t => t.status === 'Scheduled' && (t.audience === 'All staff' || t.audience.includes(e.dept)));
+  const body = `${ret.map(r => `<div class="note warn"><b>${r.id} needs your attention.</b> ${esc(r.hist[r.hist.length - 1].c)} <button class="linkbtn" data-act="open" data-id="${r.id}">Fix and resubmit</button></div>`).join('')}
+  <div class="kpis">
+    <button class="kpi" data-go="myleave"><span class="l">Annual leave left</span><span class="v">${e.bal.Annual}</span><span class="d">of 21 days</span></button>
+    <button class="kpi" data-go="myrequests"><span class="l">Requests in progress</span><span class="v">${mine.filter(r => r.status === 'pending').length}</span><span class="d">${ret.length} returned to you</span></button>
+    <button class="kpi" data-go="payslips"><span class="l">October net pay</span><span class="v" style="font-size:22px">${UGX(l.net)}</span><span class="d">${PAY.status === 'Posted' ? 'Paid' : 'Pending approval'}</span></button>
+    <button class="kpi" data-go="mytraining"><span class="l">Trainings due</span><span class="v">${trains.length}</span><span class="d">${trains.some(t => t.mandatory) ? '1 mandatory' : 'Optional'}</span></button>
+  </div>
+  <div class="grid g2">${card('Quick actions', `<div class="toolbar"><button class="btn primary" data-act="applyLeave">Apply for leave</button><button class="btn" data-act="detailsChange">Update my details</button><button class="btn" data-act="attFix">Fix a missed clock-in</button><button class="btn" data-act="trainReq">Request training</button><button class="btn" data-act="newGriev">Raise a grievance</button></div>`)}
+    ${card('Notices', `<div class="list">${myNotes().slice(0, 4).map(n => `<div class="li"><div class="grow"><div class="t" style="font-weight:500">${esc(n.text)}</div><div class="s">${DT(n.at)}</div></div></div>`).join('')}</div>`)}</div>
+  ${card('My recent requests', table([{h:'Ref', f:r => r.id}, {h:'Request', f:r => `<b>${esc(r.type)}</b><div class="muted" style="font-size:12px">${esc(r.subject)}</div>`}, {h:'Stage', f:r => reqStatus(r)}], mine.slice(0, 5), {click:r => `data-act="open" data-id="${r.id}"`, empty:'No requests yet.'}))}`;
+  return page({crumb:'My workspace', title:`Good afternoon, ${e.fn}`, sub:`${esc(e.title)} · ${esc(e.branch)} · supervisor ${esc(nm(emp(e.sup)))}`, body});
+};
+VIEWS.myrequests = () => page({crumb:'My workspace', title:'My requests', sub:'Track each request through HR and the MD.', body:table([{h:'Ref', f:r => `<span class="mono">${r.id}</span>`}, {h:'Request', f:r => `<b>${esc(r.type)}</b><div class="muted" style="font-size:12px">${esc(r.subject)}</div>`}, {h:'Raised', f:r => DT(r.created)}, {h:'Stage', f:r => reqStatus(r)}], REQS.filter(r => r.maker === USERS.staff.emp), {click:r => `data-act="open" data-id="${r.id}"`, empty:'No requests yet.'})});
+VIEWS.payslips = () => { const e = me(); return page({crumb:'Pay and time', title:'My payslips', sub:'Payslips are released after the MD approves payroll and it is posted to your account.', body:payslipHtml(e) + table([{h:'Period', f:p => p.period}, {h:'Status', f:p => pill(p.status, 'ok')}], [...PAYROLL_HIST].reverse())}); };
+VIEWS.myattendance = () => { const e = me(), a = ATT[e.id];
+  return page({crumb:'Pay and time', title:'My attendance', sub:`Shift starts ${SHIFT_START}.`, actions:'<button class="btn primary" data-act="attFix">Fix a missed clock-in</button>',
+    body:`<div class="kpis"><div class="kpi" style="cursor:default"><span class="l">Today</span><span class="v">${a ? a[0] : '-'}</span><span class="d">${a ? esc(a[2]) : 'Not clocked in'}</span></div><div class="kpi" style="cursor:default"><span class="l">Days present (Oct)</span><span class="v">20</span><span class="d">of 21 working days</span></div><div class="kpi" style="cursor:default"><span class="l">Late arrivals (Oct)</span><span class="v">1</span><span class="d">After ${SHIFT_START}</span></div></div>`}); };
+A.attFix = () => { const e = me(); formModal({title:'Attendance correction', flow:['staff','hr','md'], fields:[{id:'date', label:'Date', type:'date', val:'2026-10-27'}, {id:'time', label:'Actual time in', type:'time', val:'07:55', req:1}, {id:'reason', label:'Reason', type:'textarea', full:1, req:1, val:'Biometric device at Old Taxi Park was offline in the morning.'}],
+  onSubmit:v => { if (!v.reason) return formError('Give a reason.'), false; newReq({type:'Attendance correction', subject:`${D(v.date)}: clock-in ${v.time}`, maker:e.id, note:v.reason, fields:[['Date', D(v.date)], ['Time in', v.time], ['Reason', v.reason]], payload:{emp:e.id, time:v.time}}); toast('Sent to HR'); }}); };
+VIEWS.mytraining = () => { const e = me(); return page({crumb:'Growth and support', title:'My trainings', sub:'Trainings you attended and those coming up.', actions:'<button class="btn primary" data-act="trainReq">Request training</button>',
+  body:table([{h:'Training', f:t => esc(t.title)}, {h:'Date', f:t => D(t.date)}, {h:'Status', f:t => t.done.includes(e.id) ? pill('Attended', 'ok') : pill(t.status === 'Completed' ? 'Missed' : 'Upcoming', t.status === 'Completed' ? 'plain' : 'gold')}, {h:'Mandatory', f:t => t.mandatory ? pill('Yes', 'warn') : 'No'}], TRAININGS.filter(t => t.done.includes(e.id) || t.audience === 'All staff' || t.audience.includes(e.dept)))}); };
+A.trainReq = () => { const e = me(); formModal({title:'Request training', flow:['staff','hr','md'], fields:[{id:'title', label:'Course', req:1, full:1}, {id:'prov', label:'Provider'}, {id:'date', label:'Preferred date', type:'date'}, {id:'cost', label:'Cost (UGX)', type:'number'}, {id:'why', label:'How it helps your work', type:'textarea', full:1, req:1}],
+  onSubmit:v => { if (!v.title || !v.why) return formError('Enter the course and how it helps.'), false; newReq({type:'Training request', subject:v.title, maker:e.id, note:v.why, fields:[['Course', v.title], ['Provider', v.prov || '-'], ['Date', D(v.date)], ['Cost', v.cost ? UGX(v.cost) : '-']], payload:{emp:e.id, title:v.title, provider:v.prov || '-', date:v.date || ISO(TODAY)}}); toast('Sent to HR'); }}); };
+A.detailsChange = () => { const e = me(); const map = {phone:['Phone', e.phone], email:['Email', e.email], addr:['Address', e.addr], 'nok.n':['Next of kin name', e.nok.n], 'nok.p':['Next of kin contact', e.nok.p]};
+  formModal({title:'Request a change to my details', flow:['staff','hr','md'], fields:[{id:'field', label:'What to change', type:'select', opts:Object.entries(map).map(([k, v]) => [k, v[0]]), full:1}, {id:'val', label:'New value', req:1, full:1}, {id:'doc', label:'Supporting document', type:'file', full:1}, {type:'calc'}],
+    onInput:v => { $('#calc').innerHTML = `Current value: <b>${esc(map[v.field][1])}</b>`; },
+    onSubmit:v => { if (!v.val) return formError('Enter the new value.'), false; newReq({type:'Personal details change', subject:`${map[v.field][0]} change`, maker:e.id, fields:[['Field', map[v.field][0]], ['Current value', map[v.field][1]], ['New value', v.val], ['Supporting document', v.doc || 'None']], payload:{emp:e.id, field:v.field, value:v.val}}); toast('Sent to HR'); }}); };
+EFFECTS['Personal details change'] = r => { const e = emp(r.payload.emp), f = r.payload.field; if (f.startsWith('nok.')) e.nok[f.slice(4)] = r.payload.value; else e[f] = r.payload.value; };
+
+/* ================= START ================= */
+$('#bell').addEventListener('click', A.bell);
+$('#burger').addEventListener('click', () => $('#side').classList.toggle('open'));
+$('#q').addEventListener('input', e => { S.q = e.target.value; if (S.role === 'staff') return; if (S.view !== 'employees') go('employees'); else render(); });
+render();
+</script>
+</body>
+</html>
